@@ -1,0 +1,7 @@
+scipy>=1.7.0
+matplotlib>=3.4.0
+shapely>=1.8.0
+numpy>=1.21.0
+ezdxf>=0.17.0
+scikit-learn>=1.0.0
+tqdm>=4.62.0

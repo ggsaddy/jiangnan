@@ -1,0 +1,150 @@
+{
+  "DAC(VU-R)":{
+    "free_edges": ["toe", "arc", "line", "arc", "line"],
+    "non_free_edges": [{
+      "type": "constraint",
+      "edges": ["line"]
+      }, {
+      "type": "cornerhole",
+      "edges": ["arc"]
+      }, {
+      "type": "constraint",
+      "edges": ["line"]
+      }, {
+      "type": "cornerhole",
+      "edges": [["arc", "line"]]
+      }, {
+      "type": "constraint",
+      "edges": ["line"]
+      }],
+    "free_code": [["is_pa"], [], [], ["long_anno"], []],
+    "no_free_code":[[], [], ["long_anno"], [], []]
+  },
+  "DAC(VUF-R)":{
+    "free_edges": ["toe", "arc", "line", "arc", "line"],
+    "non_free_edges": [{
+      "type": "constraint",
+      "edges": ["line"]
+      }, {
+      "type": "cornerhole",
+      "edges": ["arc"]
+      }, {
+      "type": "constraint",
+      "edges": ["line"]
+      }, {
+      "type": "cornerhole",
+      "edges": [["arc", "line"]]
+      }, {
+      "type": "constraint",
+      "edges": ["line"]
+      }],
+    "free_code": [["is_pa"], [], [], ["long_anno"], []],
+    "no_free_code":[[], [], ["long_anno"], [], []]
+  },
+  "DPK(R)":{
+    "free_edges": ["toe", "arc", "line", "arc", "toe","KS_corner"],
+    "non_free_edges": [{
+      "type": "constraint",
+      "edges": ["line"]
+      }, {
+      "type": "cornerhole",
+      "edges": ["arc"]
+      }, {
+      "type": "constraint",
+      "edges": ["line"]
+      }, {
+      "type": "cornerhole",
+      "edges": ["arc"]
+      }, {
+      "type": "constraint",
+      "edges": ["line"]
+      }],
+  
+    "free_code": [["is_pa"], ["short_anno", "is_para", "D", "is_ontoe", "cons_vert", "toe_angle"], [], ["long_anno"], []],
+    "no_free_code":[[], [], ["long_anno"], [], []]
+  },
+  "LDPK(R-R)":{
+    "free_edges": ["toe", "arc", "line", "arc", "toe"],
+    "non_free_edges": [{
+      "type": "constraint",
+      "edges": ["line"]
+      }, {
+      "type": "cornerhole",
+      "edges": ["arc"]
+      }, {
+      "type": "constraint",
+      "edges": ["line"]
+      }, {
+      "type": "cornerhole",
+      "edges": ["arc"]
+      }, {
+      "type": "constraint",
+      "edges": ["line"]
+      }],
+    "free_code": [["is_pa"], [], [], ["long_anno"], []],
+    "no_free_code":[[], [], ["long_anno"], [], []]
+  },
+  "LDPK-1(R-R)":{
+    "free_edges": ["toe", "arc", "line", "arc", "toe"],
+    "non_free_edges": [{
+      "type": "constraint",
+      "edges": ["line"]
+      }, {
+      "type": "cornerhole",
+      "edges": ["arc"]
+      }, {
+      "type": "constraint",
+      "edges": ["line"]
+      }, {
+      "type": "cornerhole",
+      "edges": ["arc"]
+      }, {
+      "type": "constraint",
+      "edges": ["line"]
+      }],
+    "free_code": [["is_pa"], [], [], ["long_anno"], []],
+    "no_free_code":[[], [], ["long_anno"], [], []]
+  },
+  "DPKN(KS-KS)":{
+    "free_edges": ["toe", "arc", "line"],
+    "non_free_edges": [{
+      "type": "constraint",
+      "edges": ["line"]
+      }, {
+      "type": "cornerhole",
+      "edges": ["line"]
+      }, {
+      "type": "constraint",
+      "edges": ["line"]
+      }, {
+      "type": "cornerhole",
+      "edges": ["line"]
+      }, {
+      "type": "constraint",
+      "edges": ["line"]
+      }],
+    "free_code": [["is_pa", "short_anno"], [], []],
+    "no_free_code":[[], [], ["long_anno"], [], []]
+  },
+  "LDPKN(KS-KS)":{
+    "free_edges": ["toe", "arc", "line"],
+    "non_free_edges": [{
+      "type": "constraint",
+      "edges": ["line"]
+      }, {
+      "type": "cornerhole",
+      "edges": ["line"]
+      }, {
+      "type": "constraint",
+      "edges": ["line"]
+      }, {
+      "type": "cornerhole",
+      "edges": ["line"]
+      }, {
+      "type": "constraint",
+      "edges": ["line"]
+      }],
+    "free_code": [["is_pa"], [], [], ["long_anno"], []],
+    "no_free_code":[[], [], ["long_anno"], [], []]
+  }
+}

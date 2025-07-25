@@ -1,0 +1,4 @@
+肘板检测和分类调用说明：
+按照接口定义调用BraketDetecion/bracket_detection.py中的接口函数即可，
+其中包含bracket_detection和bracket_detection_add两个函数
+可以先针对bracket_detection进行调用，bracket_detection_add为修改图纸相关的补充功能
