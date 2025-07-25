@@ -1,0 +1,98 @@
+{
+    "extract_dimen.py": {
+        "description": "船舶孔洞尺寸标注信息提取脚本 - 从最终DXF文件中提取完整的尺寸、文本、型材信息",
+        "params": [
+            {
+                "param_name": "dxfpath",
+                "type": "string",
+                "description": "输入DXF文件的完整路径",
+                "default": "/Users/ieellee/Documents/FDU/ship/holes_detection/shadow.dxf"
+            }
+        ],
+        "workflow": {
+            "main_process": [
+                "1. 读取指定路径的DXF文件",
+                "2. 使用DXFConverterV2从Holes图层提取bbox信息",
+                "3. 自动转换DXF为JSON格式",
+                "4. 调用extract_allbe.py提取基础实体信息",
+                "5. 调用extract_allbe_detailed.py提取详细实体信息",
+                "6. 调用extract_close.py生成闭合连通分量",
+                "7. 创建DimensionExtractor执行尺寸标注提取",
+                "8. 生成可视化图像到./visualize_dimensions/",
+                "9. 自动生成四个Excel报告文件"
+            ]
+        },
+        "output_files": {
+            "json_files": [
+                "final.json - DXF转换的JSON文件",
+                "allbe_final_{filename}.json - 基础实体信息",
+                "allbe_detailed_final_{filename}.json - 详细实体信息",
+                "close_final_{filename}.json - 闭合连通分量信息",
+                "extracted_dimensions_final_{filename}.json - 完整的尺寸提取结果"
+            ],
+            "excel_reports": [
+                "尺寸标注信息.xlsx - 非标孔检出ID, 标注句柄, 标注值, 标注边句柄, 参考边句柄, 是否为参考点, 参考点坐标",
+                "文本信息.xlsx - 非标孔检出ID, 标注句柄, 标注文本内容",
+                "孔边形材.xlsx - 非标孔检出ID, 非标孔边界句柄, 孔边型材句柄",
+                "面板.xlsx - 非标孔检出ID, 面板文本参数"
+            ],
+            "visualization": [
+                "./visualize_dimensions/ - 包含所有检测目标的可视化PNG图像"
+            ]
+        },
+        "command_examples": [
+            {
+                "description": "处理默认DXF文件",
+                "command": "python extract_dimen.py"
+            },
+            {
+                "description": "处理指定DXF文件",
+                "command": "python extract_dimen.py --dxfpath /path/to/ship_drawing.dxf"
+            },
+            {
+                "description": "处理Windows路径DXF文件",
+                "command": "python extract_dimen.py --dxfpath \"C:\\drawings\\ship_holes.dxf\""
+            },
+            {
+                "description": "处理相对路径DXF文件",
+                "command": "python extract_dimen.py --dxfpath ./drawings/holes.dxf"
+            }
+        ],
+        "usage_examples": {
+            "基本使用": {
+                "dxfpath": "/path/to/final_detection_result.dxf"
+            },
+            "处理检测结果": {
+                "dxfpath": "./out_post_final/ship_Holes.dxf"
+            },
+            "处理阴影文件": {
+                "dxfpath": "./shadow.dxf"
+            }
+        },
+        "built_in_settings": {
+            "selected_layer": "Holes",
+            "output_path": "./final.json",
+            "dimension_extractor_params": {
+                "t1": 1.0,
+                "t2": 1.0,
+                "slope_tolerance": 0.1,
+                "parallel_distance_threshold": 999980.0,
+                "midpoint_distance_threshold": 9999400.0,
+                "debug": false
+            },
+            "close_extractor_params": {
+                "scale_factor": 1.5,
+                "tolerance_factor": 10,
+                "require_degree_2": false,
+                "visualize": true
+            }
+        },
+        "notes": [
+            "该脚本是完整pipeline的最后步骤，通常处理main.py生成的最终DXF文件",
+            "自动完成从DXF文件到Excel报告的全流程，无需手动指定中间文件",
+            "生成的Excel报告格式符合工程应用需求，便于后续CAD处理",
+            "可视化功能有助于验证提取结果的正确性",
+            "所有参数都已预设为最优值，适合大多数船舶工程图纸"
+        ]
+    }
+} 

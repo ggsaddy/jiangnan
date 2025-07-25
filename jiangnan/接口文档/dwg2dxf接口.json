@@ -1,0 +1,18 @@
+{
+    "dxf2json": {
+        "params": [
+            {
+                "param_name": "dwg_path",
+                "description": "文件路径及名称"
+            },
+            {
+                "param_name": "dxf_path",
+                "description": "输出路径及名称"
+            }
+        ],
+        "example": {
+            "dwg_path" : "./test_dwg.dwg",
+            "dxf_path" : "./test_dwg.dxf"
+        }
+    }
+}

@@ -1,0 +1,51 @@
+{
+    "bracket_detection": {
+        "params": [
+            {
+                "param_name": "input_path",
+                "description": "输入文件路径"
+            },
+            {
+                "param_name": "output_folder",
+                "description": "输出文件夹"
+            },
+            {
+                "param_name": "config_path",
+                "description": "配置文件路径"
+            }
+        ],
+        "example": {
+            "input_path": "./data/test.dxf",
+            "output_folder": "./output",
+            "config_path": "./config.json"
+        }
+    },
+    "bracket_detection_add": {
+        "params": [
+            {
+                "param_name": "input_path",
+                "description": "输入文件路径"
+            },
+            {
+                "param_name": "polys_path",
+                "description": "polys.txt文件路径"
+            },
+            {
+                "param_name": "output_folder",
+                "description": "输出文件夹"
+            },
+            {
+                "param_name": "config_path",
+                "description": "配置文件路径"
+            }
+
+        ],
+        "example": {
+            "input_path": "./data/test.dxf",
+            "polys_path":"./polys.txt",
+            "output_folder": "./output",
+            "config_path": "./config.json"
+        }
+    }
+
+}

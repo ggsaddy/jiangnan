@@ -1,0 +1,301 @@
+{
+    "main": {
+        "description": "基于YOLO的船舶孔洞检测系统主程序",
+        "working_modes": [
+            {
+                "mode": "inference_only",
+                "description": "纯推理模式，用于生产环境的孔洞检测",
+                "key_params": ["inference_only", "conf", "dxfname", "json_path"]
+            },
+            {
+                "mode": "evaluate_only", 
+                "description": "评估模式，用于模型性能评估和最佳参数寻找",
+                "key_params": ["evaluate_only", "dxf_path_gt", "dxf_path_pred", "selected_layer_gt", "selected_layer_pred"]
+            },
+            {
+                "mode": "training_detection",
+                "description": "训练检测模式，用于开发和调试",
+                "key_params": ["segment_bbox", "model_path", "debug"]
+            }
+        ],
+        "params": [
+            {
+                "param_name": "debug",
+                "type": "boolean",
+                "description": "是否处于调试模式",
+                "default": false
+            },
+            {
+                "param_name": "clear", 
+                "type": "boolean",
+                "description": "是否清理临时文件夹(sliding, runs等)",
+                "default": false
+            },
+            {
+                "param_name": "dxfpath",
+                "type": "string",
+                "description": "DXF文件所在路径",
+                "default": "./"
+            },
+            {
+                "param_name": "dxfname",
+                "type": "string", 
+                "description": "DXF文件名称",
+                "default": "data1114_v2.dxf"
+            },
+            {
+                "param_name": "json_path",
+                "type": "string",
+                "description": "DXF转换后的JSON文件输出路径", 
+                "default": "data1114_v2.json"
+            },
+            {
+                "param_name": "auto_size",
+                "type": "boolean",
+                "description": "是否使用自动画布尺寸",
+                "default": false
+            },
+            {
+                "param_name": "factor",
+                "type": "float",
+                "description": "图像缩放因子",
+                "default": 0.16
+            },
+            {
+                "param_name": "max_size", 
+                "type": "integer",
+                "description": "画布最大尺寸，公式：1024 / 59400 * max(width, height)",
+                "default": 1024
+            },
+            {
+                "param_name": "min_size",
+                "type": "integer", 
+                "description": "画布最小尺寸，公式：1024 / 59400 * min(width, height)",
+                "default": 1024
+            },
+            {
+                "param_name": "padding_ratio",
+                "type": "float",
+                "description": "图像边缘填充比例",
+                "default": 0.05
+            },
+            {
+                "param_name": "patch_size",
+                "type": "integer",
+                "description": "滑动窗口补丁尺寸",
+                "default": 2560
+            },
+            {
+                "param_name": "overlap",
+                "type": "float", 
+                "description": "滑动窗口重叠比例",
+                "default": 0.5
+            },
+            {
+                "param_name": "segment_bbox",
+                "type": "boolean",
+                "description": "是否使用segment.py生成的边界框进行区域分割检测",
+                "default": false
+            },
+            {
+                "param_name": "model_path",
+                "type": "string",
+                "description": "YOLO模型文件路径(.pt文件)",
+                "default": "best.pt"
+            },
+            {
+                "param_name": "dxf_output_path", 
+                "type": "string",
+                "description": "检测结果DXF文件的输出目录",
+                "default": "./out"
+            },
+            {
+                "param_name": "evaluate_only",
+                "type": "boolean",
+                "description": "是否仅进行模型评估(不进行检测)",
+                "default": false
+            },
+            {
+                "param_name": "dxf_path_gt",
+                "type": "string",
+                "description": "Ground Truth标注DXF文件路径",
+                "default": "./data1114_Holes_gt.dxf"
+            },
+            {
+                "param_name": "output_path_gt",
+                "type": "string",
+                "description": "Ground Truth转换后的JSON输出路径",
+                "default": "./data1114_Holes_gt.json"
+            },
+            {
+                "param_name": "selected_layer_gt",
+                "type": "string", 
+                "description": "Ground Truth中包含孔洞标注的图层名称",
+                "default": "Holes"
+            },
+            {
+                "param_name": "abandon_layer_gt",
+                "type": "string",
+                "description": "需要舍弃/忽略的图层名称",
+                "default": "开孔识别结果"
+            },
+            {
+                "param_name": "dxf_path_pred",
+                "type": "string",
+                "description": "预测结果DXF文件路径",
+                "default": "./data1114_Holes_pred.dxf"
+            },
+            {
+                "param_name": "output_path_pred",
+                "type": "string",
+                "description": "预测结果转换后的JSON输出路径", 
+                "default": "./data1114_Holes_pred.json"
+            },
+            {
+                "param_name": "selected_layer_pred",
+                "type": "string",
+                "description": "预测结果中孔洞检测的图层名称",
+                "default": "Holes"
+            },
+            {
+                "param_name": "inference_only",
+                "type": "boolean",
+                "description": "纯推理模式，用于生产环境的最终版本",
+                "default": false
+            },
+            {
+                "param_name": "conf",
+                "type": "float",
+                "description": "推理模式下的置信度阈值",
+                "default": 0.5
+            }
+        ],
+        "workflow": {
+            "inference_only_mode": [
+                "1. 提取输入DXF文件中的hatch信息用于过滤",
+                "2. 加载主要边界框并进行图像渲染",
+                "3. 使用YOLO模型进行孔洞检测推理",
+                "4. 根据置信度阈值过滤检测结果",
+                "5. 使用hatch信息过滤重叠区域(overlap_rate > 0.2)",
+                "6. 应用NMS算法去除重复检测",
+                "7. 提取所有实体信息(allbe + allbe_detailed)",
+                "8. 提取闭合连通分量",
+                "9. 提取尺寸标注信息",
+                "10. 生成最终DXF结果文件"
+            ],
+            "evaluate_only_mode": [
+                "1. 转换Ground Truth和预测结果DXF为JSON格式",
+                "2. 应用NMS和置信度过滤",
+                "3. 计算各种评估指标(IoU, mAP等)",
+                "4. 分析不同置信度阈值下的性能",
+                "5. 寻找最佳置信度和IoU阈值", 
+                "6. 使用hatch信息过滤预测结果",
+                "7. 生成最优参数下的DXF结果文件"
+            ],
+            "training_detection_mode": [
+                "1. DXF文件转换为JSON格式",
+                "2. 使用segment.py提取主要检测区域",
+                "3. 图像渲染和滑动窗口分割",
+                "4. YOLO模型推理检测",
+                "5. NMS后处理去重",
+                "6. 提取实体信息(allbe + allbe_detailed)",
+                "7. 闭合连通分量分析",
+                "8. 尺寸标注信息提取",
+                "9. 生成多个输出文件(./out, ./out_post, ./out_post_dim)"
+            ]
+        },
+        "output_files": {
+            "inference_mode": [
+                "allbe_inference.json - 所有实体信息",
+                "allbe_detailed_inference.json - 详细实体信息", 
+                "close_inference.json - 闭合连通分量",
+                "extracted_dimensions_inference-{dxfname}.json - 尺寸信息",
+                "./out_post_final/{dxfname}_Holes.dxf - 最终检测结果"
+            ],
+            "evaluate_mode": [
+                "eval_results_all.json - 完整评估结果",
+                "eval_results.txt - 最佳参数结果",
+                "./out_post_best/{dxfname}_Holes_{conf}_{iou}_best.dxf - 最优结果"
+            ],
+            "training_mode": [
+                "nms_results.txt - NMS过滤后的检测框",
+                "allbe.json / allbe_detailed.json - 实体信息",
+                "close.json - 闭合连通分量",
+                "extracted_dimensions-{dxfname}.json - 尺寸信息",
+                "./out/{dxfname}_Holes.dxf - 基础检测结果",
+                "./out_post/{dxfname}_Holes.dxf - 后处理结果", 
+                "./out_post_dim/{dxfname}_Holes.dxf - 尺寸处理结果"
+            ]
+        },
+        "command_examples": [
+            {
+                "description": "生产环境推理 - 自动尺寸",
+                "command": "python main.py --dxfname holes_dimention1.dxf --json_path holes_dimention1.json --auto_size --inference_only --conf 0.5"
+            },
+            {
+                "description": "生产环境推理 - 固定尺寸",
+                "command": "python main.py --dxfname data1114_v2.dxf --json_path data1114_v2.json --max_size 4096 --min_size 4096 --inference_only --conf 0.6"
+            },
+            {
+                "description": "模型评估",
+                "command": "python main.py --evaluate_only --dxf_path_gt ./ground_truth.dxf --dxf_path_pred ./prediction.dxf --selected_layer_gt Holes --selected_layer_pred Holes"
+            },
+            {
+                "description": "训练开发 - 分段检测",
+                "command": "python main.py --dxfname data1114_v2.dxf --json_path data1114_v2.json --max_size 4096 --min_size 4096 --segment_bbox --clear"
+            },
+            {
+                "description": "面板检测",
+                "command": "python main.py --dxfname holes_dimention_panel1.dxf --json_path holes_dimention_panel1.json --auto_size"
+            },
+            {
+                "description": "后处理检测",
+                "command": "python main.py --dxfname postpro.dxf --json_path postpro.json --auto_size"
+            },
+            {
+                "description": "调试模式",
+                "command": "python main.py --dxfname debug.dxf --json_path debug.json --debug --clear --segment_bbox"
+            }
+        ],
+        "usage_examples": {
+            "快速推理": {
+                "dxfname": "holes_dimention1.dxf", 
+                "json_path": "holes_dimention1.json",
+                "auto_size": true,
+                "inference_only": true,
+                "conf": 0.5
+            },
+            "高精度推理": {
+                "dxfname": "complex_ship.dxf",
+                "json_path": "complex_ship.json", 
+                "max_size": 4096,
+                "min_size": 4096,
+                "inference_only": true,
+                "conf": 0.7
+            },
+            "模型评估": {
+                "evaluate_only": true,
+                "dxf_path_gt": "./data1114_Holes_gt.dxf",
+                "dxf_path_pred": "./data1114_Holes_pred.dxf", 
+                "selected_layer_gt": "Holes",
+                "selected_layer_pred": "Holes",
+                "abandon_layer_gt": "开孔识别结果"
+            },
+            "开发调试": {
+                "dxfname": "test.dxf",
+                "json_path": "test.json",
+                "segment_bbox": true,
+                "debug": true,
+                "clear": true,
+                "model_path": "best.pt"
+            }
+        },
+        "notes": [
+            "推理模式会自动进行完整的后处理流程，包括实体提取、连通分量分析和尺寸标注",
+            "评估模式会寻找最佳的置信度和IoU阈值组合",
+            "训练模式支持段分割检测，适合大型复杂图纸",
+            "系统支持hatch区域过滤，避免在填充区域进行错误检测",
+            "所有模式都支持NMS去重和多种后处理算法"
+        ]
+    }
+} 

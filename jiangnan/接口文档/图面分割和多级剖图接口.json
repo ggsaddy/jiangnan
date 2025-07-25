@@ -1,0 +1,44 @@
+{
+    "segment_all_main":{
+        "params":[
+            {
+                "param_name": "input_file",
+                "description": "文件名称"
+            },
+            {
+                "param_name": "input_folder",
+                "description": "输入路径"
+            },
+            {
+                "param_name": "output_folder",
+                "description": "输出路径"
+            }
+        ],
+        "example": {
+            "input_file": "./data/2854\test1.dxf",
+            "input_folder": "./data/2854",
+            "output_folder": "C:\test\test_out"
+        }
+    },
+    "multi_detection_main":{
+        "params":[
+            {
+                "param_name": "input_file",
+                "description": "文件名称"
+            },
+            {
+                "param_name": "input_folder",
+                "description": "输入路径"
+            },
+            {
+                "param_name": "output_folder",
+                "description": "输出路径"
+            }
+        ],
+        "example": {
+            "input_file": "./data/2854\test1.dxf",
+            "input_folder": "./data/2854",
+            "output_folder": "C:\test\test_out"
+        }
+    }
+}
