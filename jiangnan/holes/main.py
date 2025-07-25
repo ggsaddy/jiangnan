@@ -16,7 +16,7 @@ from load_v2 import DXFConverterV2
 from evaluate import evaluate, convert, analyze_confidence_thresholds, calculate_iou, calculate_overlap_rate
 # from statistic_holes import EntityAnalyzer
 from filter_bbox import load_data_and_get_main_bbox
-from holes.extract_dimen import DimensionExtractor
+from extract_dimen import DimensionExtractor
 # 新增导入模块
 from extract_allbe import EntityExtractor as AllbeExtractor
 from extract_allbe_detailed import EntityExtractor as AllbeDetailedExtractor
