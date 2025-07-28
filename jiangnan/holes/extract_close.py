@@ -8,9 +8,9 @@ import ezdxf
 import matplotlib.pyplot as plt
 from typing import List, Dict, Tuple
 from collections import defaultdict
-from load_v2 import DXFConverterV2
-from extract_dimen import DimensionExtractor
-from draw_dxf import draw_rectangle_in_dxf
+from holes.load_v2 import DXFConverterV2
+from holes.extract_dimen import DimensionExtractor
+from holes.draw_dxf import draw_rectangle_in_dxf
 
 class Node:
     def __init__(self, x, y, k=4):

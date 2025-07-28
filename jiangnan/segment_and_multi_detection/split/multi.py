@@ -1,5 +1,5 @@
-from split.src import component, UnionFind, all_components
-from split.utils import *
+from segment_and_multi_detection.split.src import component, UnionFind, all_components
+from segment_and_multi_detection.split.utils import *
 # from split.main import *
 import numpy as np
 import math

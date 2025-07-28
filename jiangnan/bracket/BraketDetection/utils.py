@@ -1,7 +1,7 @@
 import json 
-from  element import *
+from bracket.BraketDetection.element import *
 import math
-from plot_geo import plot_geometry,plot_polys, plot_info_poly
+from bracket.BraketDetection.plot_geo import plot_geometry,plot_polys, plot_info_poly
 import matplotlib.pyplot as plt
 import numpy as np
 from collections import deque
@@ -13,7 +13,7 @@ from concurrent.futures import ProcessPoolExecutor, as_completed,TimeoutError
 import time
 from functools import partial
 from itertools import combinations
-from bracket_parameter_extraction import *
+from bracket.BraketDetection.bracket_parameter_extraction import *
 from shapely.geometry import Polygon,Point
 import shutil
 from datetime import datetime

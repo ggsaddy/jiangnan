@@ -10,7 +10,7 @@ import re
 import pandas as pd
 import argparse
 from collections import Counter
-from load_v2 import DXFConverterV2
+from holes.load_v2 import DXFConverterV2
 
 class DimensionExtractor:
     def __init__(self, allbe_path: str, close_path: str, t1: float = 1.0, t2: float = 1.0, debug: bool = False, 
@@ -1530,7 +1530,7 @@ if __name__ == "__main__":
     # 可选择是否运行测试
     parser = argparse.ArgumentParser()
     
-    parser.add_argument('--dxfpath', type=str, default="/Users/ieellee/Documents/FDU/ship/holes_detection/shadow.dxf", help="dxf path")
+    parser.add_argument('--dxfpath', type=str, default="/Users/ieellee/Documents/FDU/ship/holes_detection/shadow.dxf", help="dxf path") #唯一输入参数
     args = parser.parse_args()
 
     dxf_path = args.dxfpath

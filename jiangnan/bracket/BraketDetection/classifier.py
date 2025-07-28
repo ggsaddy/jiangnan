@@ -1,6 +1,6 @@
 import json
 import random
-from element import *
+from bracket.BraketDetection.element import *
 import copy
 
 

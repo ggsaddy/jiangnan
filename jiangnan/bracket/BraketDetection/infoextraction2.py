@@ -1,12 +1,12 @@
-from  element import *
-from plot_geo import plot_geometry,plot_polys, plot_info_poly,p_minus,p_add,p_mul
+from  bracket.BraketDetection.element import *
+from bracket.BraketDetection.plot_geo import plot_geometry,plot_polys, plot_info_poly,p_minus,p_add,p_mul
 import os
-from utils import segment_intersection_line,segment_intersection,computeBoundingBox,is_parallel,conpute_angle_of_two_segments,point_segment_position,shrinkFixedLength,check_points_against_segments,check_points_against_free_segments,check_parallel_anno,check_vertical_anno,check_non_parallel_anno,check_whole
-from classifier import poly_classifier,match_template,load_classification_table,eva_c_f,poly_classifier_ustd
+from bracket.BraketDetection.utils import segment_intersection_line,segment_intersection,computeBoundingBox,is_parallel,conpute_angle_of_two_segments,point_segment_position,shrinkFixedLength,check_points_against_segments,check_points_against_free_segments,check_parallel_anno,check_vertical_anno,check_non_parallel_anno,check_whole
+from bracket.BraketDetection.classifier import poly_classifier,match_template,load_classification_table,eva_c_f,poly_classifier_ustd
 from scipy.spatial import ConvexHull
 import matplotlib.pyplot as plt
 from shapely.geometry import Point, Polygon, LineString
-from bracket_parameter_extraction import parse_elbow_plate
+from bracket.BraketDetection.bracket_parameter_extraction import parse_elbow_plate
 import json
 import re
 import numpy as np
@@ -3749,7 +3749,8 @@ def outputInfo(index,edges_info,poly_centroid,hint_info,meta_info,segmentation_c
                         anno_des=f"{anno_des},{anno[1]}"
                     for anno in all_edge_map[corner_hole_start_edge]["尺寸参数"]:
                         anno_des2=f"{anno_des2},{anno[1]}"
-                    des=f"短边是否平行于相邻边:{all_edge_map[corner_hole_start_edge]["短边是否平行于相邻边"]};\n\t\t\t短边尺寸标注:{anno_des}\n\t\t\t尺寸参数:{anno_des2}"
+                    '''des=f"短边是否平行于相邻边:{all_edge_map[corner_hole_start_edge]["短边是否平行于相邻边"]};\n\t\t\t短边尺寸标注:{anno_des}\n\t\t\t尺寸参数:{anno_des2}"'''
+                    des=f"短边是否平行于相邻边:{all_edge_map[corner_hole_start_edge]['短边是否平行于相邻边']};\n\t\t\t短边尺寸标注:{anno_des}\n\t\t\t尺寸参数:{anno_des2}"
                     json_data["非自由边"][-1]["标注"]=all_edge_map[corner_hole_start_edge]
                     log_to_file(file_path,f"        VU孔标注:\n\t\t\t{des}")
                     for seg in edge:
@@ -3887,8 +3888,9 @@ def outputInfo(index,edges_info,poly_centroid,hint_info,meta_info,segmentation_c
                 anno_des=""
                 for anno in all_edge_map[seg]["半径尺寸标注"]:
                     anno_des=f"{anno_des},{anno[1]}"
-                des=f"是否相切:{all_edge_map[seg]["是否相切"]}\n\t\t\t半径尺寸标注:{anno_des}\n\t\t\t圆心是否在趾端延长线上:{all_edge_map[seg]["圆心是否在趾端延长线上"]}"
-            
+                '''des=f"是否相切:{all_edge_map[seg]["是否相切"]}\n\t\t\t半径尺寸标注:{anno_des}\n\t\t\t圆心是否在趾端延长线上:{all_edge_map[seg]["圆心是否在趾端延长线上"]}"'''
+                des=f"是否相切:{all_edge_map[seg]['是否相切']}\n\t\t\t半径尺寸标注:{anno_des}\n\t\t\t圆心是否在趾端延长线上:{all_edge_map[seg]['圆心是否在趾端延长线上']}"
+
                 log_to_file(file_path, f"           标注:\n\t\t\t{des}")        
             elif edge_types[seg]=="line":
                 json_data["自由边"][-1]["几何"]={
@@ -3899,7 +3901,9 @@ def outputInfo(index,edges_info,poly_centroid,hint_info,meta_info,segmentation_c
                 json_data["自由边"][-1]["句柄"]=seg.ref.handle
                 json_data["自由边"][-1]["标注"]=all_edge_map[seg]
                 log_to_file(file_path, f"       起点：{seg.start_point}、终点{seg.end_point}、长度：{seg.length()}（直线）、句柄: {seg.ref.handle}")
-                des=f"是否与约束边平行:{all_edge_map[seg]["是否与约束边平行"]}\n\t\t\t是否与相邻约束边夹角为90度:{all_edge_map[seg]["是否与相邻约束边夹角为90度"]}"
+                '''des=f"是否与约束边平行:{all_edge_map[seg]["是否与约束边平行"]}\n\t\t\t是否与相邻约束边夹角为90度:{all_edge_map[seg]["是否与相邻约束边夹角为90度"]}"'''
+                des=f"是否与约束边平行:{all_edge_map[seg]['是否与约束边平行']}\n\t\t\t是否与相邻约束边夹角为90度:{all_edge_map[seg]['是否与相邻约束边夹角为90度']}"
+                
                 for ty,annos in all_edge_map[seg].items():
                     if ty=="是否与约束边平行" or ty=="是否与相邻约束边夹角为90度" :
                         continue
@@ -4350,8 +4354,9 @@ def outputInfo(index,edges_info,poly_centroid,hint_info,meta_info,segmentation_c
                 anno_des=""
                 for anno in all_edge_map[seg]["半径尺寸标注"]:
                     anno_des=f"{anno_des},{anno[1]}"
-                des=f"是否相切:{all_edge_map[seg]["是否相切"]}\n\t\t\t半径尺寸标注:{anno_des}\n\t\t\t圆心是否在趾端延长线上:{all_edge_map[seg]["圆心是否在趾端延长线上"]}"
-            
+                '''des=f"是否相切:{all_edge_map[seg]["是否相切"]}\n\t\t\t半径尺寸标注:{anno_des}\n\t\t\t圆心是否在趾端延长线上:{all_edge_map[seg]["圆心是否在趾端延长线上"]}"'''
+                des=f"是否相切:{all_edge_map[seg]['是否相切']}\n\t\t\t半径尺寸标注:{anno_des}\n\t\t\t圆心是否在趾端延长线上:{all_edge_map[seg]['圆心是否在趾端延长线上']}"
+
                 log_to_file(file_path, f"           标注:\n\t\t\t{des}")        
             elif edge_types[seg]=="line":
                 
@@ -4364,7 +4369,8 @@ def outputInfo(index,edges_info,poly_centroid,hint_info,meta_info,segmentation_c
                 json_data["自由边"][-1]["句柄"]=seg.ref.handle
                 json_data["自由边"][-1]["标注"]=all_edge_map[seg]
                 
-                des=f"是否与约束边平行:{all_edge_map[seg]["是否与约束边平行"]}\n\t\t\t是否与相邻约束边夹角为90度:{all_edge_map[seg]["是否与相邻约束边夹角为90度"]}"
+                '''des=f"是否与约束边平行:{all_edge_map[seg]["是否与约束边平行"]}\n\t\t\t是否与相邻约束边夹角为90度:{all_edge_map[seg]["是否与相邻约束边夹角为90度"]}"'''
+                des=f"是否与约束边平行:{all_edge_map[seg]['是否与约束边平行']}\n\t\t\t是否与相邻约束边夹角为90度:{all_edge_map[seg]['是否与相邻约束边夹角为90度']}"
                 for ty,annos in all_edge_map[seg].items():
                     if ty=="是否与约束边平行" or ty=="是否与相邻约束边夹角为90度" :
                         continue
@@ -4462,7 +4468,8 @@ def outputInfo(index,edges_info,poly_centroid,hint_info,meta_info,segmentation_c
                         anno_des=f"{anno_des},{anno[1]}"
                     for anno in all_edge_map[corner_hole_start_edge]["尺寸参数"]:
                         anno_des2=f"{anno_des2},{anno[1]}"
-                    des=f"短边是否平行于相邻边:{all_edge_map[corner_hole_start_edge]["短边是否平行于相邻边"]};\n\t\t\t短边尺寸标注:{anno_des}\n\t\t\t尺寸参数:{anno_des2}"
+                    '''des=f"短边是否平行于相邻边:{all_edge_map[corner_hole_start_edge]["短边是否平行于相邻边"]};\n\t\t\t短边尺寸标注:{anno_des}\n\t\t\t尺寸参数:{anno_des2}"'''
+                    des=f"短边是否平行于相邻边:{all_edge_map[corner_hole_start_edge]['短边是否平行于相邻边']};\n\t\t\t短边尺寸标注:{anno_des}\n\t\t\t尺寸参数:{anno_des2}"
                     log_to_file(file_path,f"        VU孔标注:\n\t\t\t{des}")
                     json_data["非自由边"][-1]["标注"]=all_edge_map[corner_hole_start_edge]
                     for seg in edge:
@@ -4929,7 +4936,8 @@ def outputInfo(index,edges_info,poly_centroid,hint_info,meta_info,segmentation_c
                         anno_des=f"{anno_des},{anno[1]}"
                     for anno in all_edge_map[corner_hole_start_edge]["尺寸参数"]:
                         anno_des2=f"{anno_des2},{anno[1]}"
-                    des=f"短边是否平行于相邻边:{all_edge_map[corner_hole_start_edge]["短边是否平行于相邻边"]};\n\t\t\t短边尺寸标注:{anno_des}\n\t\t\r尺寸参数:{anno_des2}"
+                    '''des=f"短边是否平行于相邻边:{all_edge_map[corner_hole_start_edge]["短边是否平行于相邻边"]};\n\t\t\t短边尺寸标注:{anno_des}\n\t\t\r尺寸参数:{anno_des2}"'''
+                    des=f"短边是否平行于相邻边:{all_edge_map[corner_hole_start_edge]['短边是否平行于相邻边']};\n\t\t\t短边尺寸标注:{anno_des}\n\t\t\r尺寸参数:{anno_des2}"
                     log_to_file(file_path,f"        VU孔标注:\n\t\t\t{des}")
                     for seg in edge:
                         if isinstance(seg.ref, DArc):
@@ -4986,13 +4994,15 @@ def outputInfo(index,edges_info,poly_centroid,hint_info,meta_info,segmentation_c
                 anno_des=""
                 for anno in all_edge_map[seg]["半径尺寸标注"]:
                     anno_des=f"{anno_des},{anno[1]}"
-                des=f"是否相切:{all_edge_map[seg]["是否相切"]}\n\t\t\t半径尺寸标注:{anno_des}\n\t\t\t圆心是否在趾端延长线上:{all_edge_map[seg]["圆心是否在趾端延长线上"]}"
-            
+                '''des=f"是否相切:{all_edge_map[seg]["是否相切"]}\n\t\t\t半径尺寸标注:{anno_des}\n\t\t\t圆心是否在趾端延长线上:{all_edge_map[seg]["圆心是否在趾端延长线上"]}"'''
+                des=f"是否相切:{all_edge_map[seg]['是否相切']}\n\t\t\t半径尺寸标注:{anno_des}\n\t\t\t圆心是否在趾端延长线上:{all_edge_map[seg]['圆心是否在趾端延长线上']}"
+
                 log_to_file(file_path, f"           标注:\n\t\t\t{des}")        
             elif edge_types[seg]=="line":
                 
                 log_to_file(file_path, f"       起点：{seg.start_point}、终点{seg.end_point}、长度：{seg.length()}（直线）、句柄: {seg.ref.handle}")
-                des=f"是否与约束边平行:{all_edge_map[seg]["是否与约束边平行"]}\n\t\t\t是否与相邻约束边夹角为90度:{all_edge_map[seg]["是否与相邻约束边夹角为90度"]}"
+                '''des=f"是否与约束边平行:{all_edge_map[seg]["是否与约束边平行"]}\n\t\t\t是否与相邻约束边夹角为90度:{all_edge_map[seg]["是否与相邻约束边夹角为90度"]}"'''
+                des=f"是否与约束边平行:{all_edge_map[seg]['是否与约束边平行']}\n\t\t\t是否与相邻约束边夹角为90度:{all_edge_map[seg]['是否与相邻约束边夹角为90度']}"
                 for ty,annos in all_edge_map[seg].items():
                     if ty=="是否与约束边平行" or ty=="是否与相邻约束边夹角为90度" :
                         continue

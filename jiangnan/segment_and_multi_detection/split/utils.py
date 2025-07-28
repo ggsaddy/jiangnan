@@ -2,7 +2,7 @@ import json
 import os
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
-from split.src import component, UnionFind, all_components, sub_components
+from segment_and_multi_detection.split.src import component, UnionFind, all_components, sub_components
 from tqdm import tqdm
 from collections import deque
 import copy

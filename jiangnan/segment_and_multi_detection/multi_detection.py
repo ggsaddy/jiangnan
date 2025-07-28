@@ -2,8 +2,8 @@ import argparse
 import os
 
 import ezdxf.colors
-from load import dxf2json
-from split.main import segment_v4, multi_detect_local
+from segment_and_multi_detection.load import dxf2json
+from segment_and_multi_detection.split.main import segment_v4, multi_detect_local
 import ezdxf
 import logging
 import json
@@ -229,6 +229,8 @@ def draw_rectangle_in_dxf(file_path, folder, file_name, bbox_lists):
     doc.saveas(os.path.join(folder, "{}_SECTION_DRAWING.dxf".format(file_name)))
 
 def multi_detection_main(input_file, input_folder, output_folder):
+    logging.info("multi_detection_main() 被调用了！")
+
     file_name = os.path.basename(input_file)[:-4]
     print("Processing file: {}".format(file_name))
     input_dxf_file = os.path.join(input_folder, file_name + ".dxf")

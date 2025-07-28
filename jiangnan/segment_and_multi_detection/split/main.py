@@ -1,8 +1,8 @@
 import sys
 sys.path.append('..')
-from split.utils import *
+from segment_and_multi_detection.split.utils import *
 # from split.contain import *
-from split.multi import detect, after_deal_with_title
+from segment_and_multi_detection.split.multi import detect, after_deal_with_title
 import time
 from multiprocessing import Pool
 from tqdm import tqdm

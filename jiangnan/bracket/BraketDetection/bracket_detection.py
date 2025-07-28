@@ -1,20 +1,22 @@
-from element import *
+from bracket.BraketDetection.element import *
 import random
 import matplotlib.pyplot as plt
-from utils import *
-from infoextraction2 import *
+from bracket.BraketDetection.utils import *
+from bracket.BraketDetection.infoextraction2 import *
 import numpy as np
-from plot_geo import *
-from config import *
+from bracket.BraketDetection.plot_geo import *
+from bracket.BraketDetection.config import *
 # from DGCNN_model import *
 from tqdm import tqdm
-from classifier import *
-from draw_dxf import *
+from bracket.BraketDetection.classifier import *
+from bracket.BraketDetection.draw_dxf import *
 import argparse
-from load import dxf2json
+from bracket.BraketDetection.load import dxf2json
 import json
+import logging
 
 def bracket_detection(input_path, output_folder, config_path):
+    logging.info("bracket_detection() 被调用了！")
     segmentation_config=SegmentationConfig()
     verbose=segmentation_config.verbose
     
@@ -165,6 +167,7 @@ def bracket_detection(input_path, output_folder, config_path):
 
     
 def bracket_detection_add(input_path, polys_path, output_folder,  config_path):
+    logging.info("bracket_detection_add() 被调用了！")
     segmentation_config=SegmentationConfig()
     verbose=segmentation_config.verbose
     

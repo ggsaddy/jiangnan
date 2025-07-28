@@ -9,14 +9,14 @@ import os
 import argparse
 import ezdxf 
 from ezdxf.addons import odafc 
-
+import logging
 
 
 
 
 def dwg2dxf(dwg_path, dxf_path):
 
-
+    logging.info("dwg2dxf() 被调用了！")
 
     win_oda_path = r"C:\Program Files\ODA\ODAFileConverter\ODAFileConverter.exe"
     mac_oda_path = "/Applications/ODAFileConverter.app/Contents/MacOS/ODAFileConverter"

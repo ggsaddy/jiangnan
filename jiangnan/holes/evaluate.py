@@ -2,8 +2,8 @@ import json
 import numpy as np
 import os
 import sys
-from load_v2 import DXFConverterV2
-from yolo_test import nms 
+from holes.load_v2 import DXFConverterV2
+from holes.yolo_test import nms 
 
 def calculate_iou(box1: list, box2: list) -> float:
     # Extract coordinates (ignore confidence values)

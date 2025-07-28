@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from element import *
+from bracket.BraketDetection.element import *
 import os
 from shapely.geometry import Point, Polygon
 def p_minus(a,b):

@@ -8,6 +8,7 @@ import math
 import numpy as np
 import math
 from ezdxf.xclip import XClip, ClippingPath
+import logging
 
 # Entity 
 # (g)type
@@ -634,6 +635,8 @@ def analyzeNonBlockEntity(doc, e):
 
 # dxfname不需要携带.dxf后缀
 def dxf2json(dxfpath,dxfname,output_folder):
+    logging.info("dxf2json() 被调用了！")
+    
     print('----dxf2json START-----')
     relpath = os.path.join(dxfpath,dxfname)
     relpath_dxf = relpath + '.dxf'

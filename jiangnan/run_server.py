@@ -10,6 +10,11 @@ import logging.handlers
 
 import preprocess.load as load
 import preprocess.convert_dwg2dxf as convert_dwg2dxf
+import segment_and_multi_detection.segment_all as segment_all
+import segment_and_multi_detection.multi_detection as multi_detection
+import holes.extract_dimen_test as extract_dimen_test
+import holes.main_test as main_test
+import bracket.BraketDetection.bracket_detection as bracket_detection
 
 app = Flask(__name__)
 
@@ -21,7 +26,7 @@ def dxf2json():
     dxfpath = data["dxfpath"]
     dxfname = data["dxfname"]
     load.dxf2json(dxfpath, dxfname, dxfpath)
-    print(dxfpath,dxfname)
+    # print(dxfpath,dxfname)
     return "<p>success!</p>"
 
 @app.route("/dwg2dxf", methods=['POST'])
@@ -32,7 +37,60 @@ def dwg2dxf():
     dwg_path = data["dwg_path"]
     dxf_path = data["dxf_path"]
     convert_dwg2dxf.dwg2dxf(dwg_path, dxf_path)
-    print(dwg_path, dxf_path)
+    # convert_dwg2dxf.dwg2dxf(**data)
+    # print(dwg_path, dxf_path)
+    return "<p>success!</p>"
+
+@app.route("/segment", methods=['POST'])
+def segment():
+    data = request.get_json()
+    input_file = data["input_file"]
+    input_folder = data["input_folder"]
+    output_folder = data["output_folder"]
+    segment_all.segment_all_main(input_file, input_folder, output_folder)
+    return "<p>success!</p>"
+
+@app.route("/detection", methods=['POST'])
+def detection():
+    data = request.get_json()
+    input_file = data["input_file"]
+    input_folder = data["input_folder"]
+    output_folder = data["output_folder"]
+    multi_detection.multi_detection_main(input_file, input_folder, output_folder)
+    return "<p>success!</p>"
+
+@app.route("/dimension_test", methods=['POST'])
+def extract_dimension():
+    data = request.get_json()
+    dxf_path = data["dxf_path"]
+    print(dxf_path)
+    extract_dimen_test.extract_dimen_test(dxf_path)
+    return "<p>success!</p>"
+
+@app.route("/main_test", methods=['POST'])
+def main():
+    data = request.get_json()
+    args = main_test.merge_args(data)
+    main_test.main_test(args)
+    return "<p>success!</p>"
+
+@app.route("/bracket", methods=['POST'])
+def bracket():
+    data = request.get_json()
+    input_path = data["input_path"]
+    output_folder = data["output_folder"]
+    config_path = data["config_path"]
+    bracket_detection.bracket_detection(input_path, output_folder, config_path)
+    return "<p>success!</p>"
+
+@app.route("/bracket_add", methods=['POST'])
+def bracket_add():
+    data = request.get_json()
+    input_path = data["input_path"]
+    polys_path = data["polys_path"]
+    output_folder = data["output_folder"]
+    config_path = data["config_path"]
+    bracket_detection.bracket_detection_add(input_path, polys_path, output_folder, config_path)
     return "<p>success!</p>"
 
 app.run(host='0.0.0.0', port=1180)
