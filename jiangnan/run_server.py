@@ -93,4 +93,19 @@ def bracket_add():
     bracket_detection.bracket_detection_add(input_path, polys_path, output_folder, config_path)
     return "<p>success!</p>"
 
-app.run(host='0.0.0.0', port=1180)
+@app.route("/dwg_bracket", methods=['POST'])
+def dwg_bracket():
+    data = request.get_json()
+    input_path = data["input_path"] # "./data/test.dwg"
+    output_path = data["output_path"] # "./data/test.dxf"
+    output_folder_1 = data["output_folder_1"] # "./data/test.dxf"
+    convert_dwg2dxf.dwg2dxf(input_path, output_path)
+    output_folder = os.path.dirname(output_path) # "./data"
+    multi_detection.multi_detection_main(output_path, output_folder, output_folder)
+    config_path = None
+    bbox,all_json_data = bracket_detection.bracket_detection(output_path, output_folder_1, config_path)
+    return bbox,all_json_data
+    # return "<p>success!</p>"
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=1180)

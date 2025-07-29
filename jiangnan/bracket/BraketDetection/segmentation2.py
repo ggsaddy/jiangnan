@@ -105,7 +105,7 @@ if __name__ == '__main__':
   
     edges_infos,poly_centroids,hint_infos,meta_infos=diffusion_step(edges_infos,poly_centroids,hint_infos,meta_infos)
 
-    polys_info,classi_res,flags=classificationAndOutputStep(indices,edges_infos,poly_centroids,hint_infos,meta_infos,segmentation_config,polys,polyline_handles)
+    polys_info,classi_res,flags,all_json_data=classificationAndOutputStep(indices,edges_infos,poly_centroids,hint_infos,meta_infos,segmentation_config,polys,polyline_handles)
 
     # 获得需要去重肘板的id
     delete_bracket_ids = find_dump_bracket_ids(polys_info, classi_res, indices)

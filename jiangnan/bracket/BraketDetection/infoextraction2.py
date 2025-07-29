@@ -1,7 +1,7 @@
-from  bracket.BraketDetection.element import *
+from bracket.BraketDetection.element import *
 from bracket.BraketDetection.plot_geo import plot_geometry,plot_polys, plot_info_poly,p_minus,p_add,p_mul
 import os
-from bracket.BraketDetection.utils import segment_intersection_line,segment_intersection,computeBoundingBox,is_parallel,conpute_angle_of_two_segments,point_segment_position,shrinkFixedLength,check_points_against_segments,check_points_against_free_segments,check_parallel_anno,check_vertical_anno,check_non_parallel_anno,check_whole
+from bracket.BraketDetection.utils import segment_intersection_line,segment_intersection,computeBoundingBox,is_parallel,conpute_angle_of_two_segments,point_segment_position,shrinkFixedLength,check_points_against_segments,check_points_against_free_segments,check_parallel_anno,check_vertical_anno,check_non_parallel_anno,check_whole,compute_json_bbox
 from bracket.BraketDetection.classifier import poly_classifier,match_template,load_classification_table,eva_c_f,poly_classifier_ustd
 from scipy.spatial import ConvexHull
 import matplotlib.pyplot as plt
@@ -3576,7 +3576,8 @@ def outputInfo(index,edges_info,poly_centroid,hint_info,meta_info,segmentation_c
     if multi_data is not None:
         multi_poly_dic = multi_data[-1]["子图调用次数"]
         poumian_name, poumian_copy_time = get_copy_info(poly_centroid, multi_poly_dic)
-        
+    
+    json_data["bbox"] = compute_json_bbox(poly_refs)
 
     #handle center classification type edge  value AorB  is_diff
     size_hints=[]
@@ -3588,10 +3589,10 @@ def outputInfo(index,edges_info,poly_centroid,hint_info,meta_info,segmentation_c
             thickness=meta_info[1]["Thickness"]
         classification_res=poly_classifier_ustd(free_edges, edges, segmentation_config.unstandard_type_path, edge_types, thickness, feature_map)
         if classification_res is None or classification_res=="Unclassified":
-            return poly_refs,"Unclassified",[],[]
+            return poly_refs,"Unclassified",[],[], None
         classification_res=f"ustd:{classification_res}"
         if check_one_class_ustd(polyline_handles,classification_res,free_edges,constraint_edges,edges,poly_refs,poly,all_edge_map)==False:
-            return poly_refs,"Unclassified",[],[]
+            return poly_refs,"Unclassified",[],[], None
         template_cons_edges=[]
         cornorhole_edge_no={}
         i_=1
@@ -3749,7 +3750,6 @@ def outputInfo(index,edges_info,poly_centroid,hint_info,meta_info,segmentation_c
                         anno_des=f"{anno_des},{anno[1]}"
                     for anno in all_edge_map[corner_hole_start_edge]["尺寸参数"]:
                         anno_des2=f"{anno_des2},{anno[1]}"
-                    '''des=f"短边是否平行于相邻边:{all_edge_map[corner_hole_start_edge]["短边是否平行于相邻边"]};\n\t\t\t短边尺寸标注:{anno_des}\n\t\t\t尺寸参数:{anno_des2}"'''
                     des=f"短边是否平行于相邻边:{all_edge_map[corner_hole_start_edge]['短边是否平行于相邻边']};\n\t\t\t短边尺寸标注:{anno_des}\n\t\t\t尺寸参数:{anno_des2}"
                     json_data["非自由边"][-1]["标注"]=all_edge_map[corner_hole_start_edge]
                     log_to_file(file_path,f"        VU孔标注:\n\t\t\t{des}")
@@ -3888,9 +3888,8 @@ def outputInfo(index,edges_info,poly_centroid,hint_info,meta_info,segmentation_c
                 anno_des=""
                 for anno in all_edge_map[seg]["半径尺寸标注"]:
                     anno_des=f"{anno_des},{anno[1]}"
-                '''des=f"是否相切:{all_edge_map[seg]["是否相切"]}\n\t\t\t半径尺寸标注:{anno_des}\n\t\t\t圆心是否在趾端延长线上:{all_edge_map[seg]["圆心是否在趾端延长线上"]}"'''
                 des=f"是否相切:{all_edge_map[seg]['是否相切']}\n\t\t\t半径尺寸标注:{anno_des}\n\t\t\t圆心是否在趾端延长线上:{all_edge_map[seg]['圆心是否在趾端延长线上']}"
-
+            
                 log_to_file(file_path, f"           标注:\n\t\t\t{des}")        
             elif edge_types[seg]=="line":
                 json_data["自由边"][-1]["几何"]={
@@ -3901,9 +3900,7 @@ def outputInfo(index,edges_info,poly_centroid,hint_info,meta_info,segmentation_c
                 json_data["自由边"][-1]["句柄"]=seg.ref.handle
                 json_data["自由边"][-1]["标注"]=all_edge_map[seg]
                 log_to_file(file_path, f"       起点：{seg.start_point}、终点{seg.end_point}、长度：{seg.length()}（直线）、句柄: {seg.ref.handle}")
-                '''des=f"是否与约束边平行:{all_edge_map[seg]["是否与约束边平行"]}\n\t\t\t是否与相邻约束边夹角为90度:{all_edge_map[seg]["是否与相邻约束边夹角为90度"]}"'''
                 des=f"是否与约束边平行:{all_edge_map[seg]['是否与约束边平行']}\n\t\t\t是否与相邻约束边夹角为90度:{all_edge_map[seg]['是否与相邻约束边夹角为90度']}"
-                
                 for ty,annos in all_edge_map[seg].items():
                     if ty=="是否与约束边平行" or ty=="是否与相邻约束边夹角为90度" :
                         continue
@@ -4107,7 +4104,7 @@ def outputInfo(index,edges_info,poly_centroid,hint_info,meta_info,segmentation_c
         with open(json_name,'w',encoding='utf-8') as f:
             f.write(json_str)
         
-        return poly_refs, classification_res,meta_hints,size_hints
+        return poly_refs, classification_res,meta_hints,size_hints, None
 
 
     cornerhole_num=0
@@ -4137,7 +4134,7 @@ def outputInfo(index,edges_info,poly_centroid,hint_info,meta_info,segmentation_c
             ignore_types=["line"]
         template_map=match_template(edges,free_edges,output_template,edge_types,thickness)
         if check_one_class(classification_res,template_map,free_edges,constraint_edges,edges,poly_refs,poly,all_edge_map, ref_map)==False:
-            return poly_refs,"Unclassified",[],[]
+            return poly_refs,"Unclassified",[],[], None
         # print(output_template)
         free_edge_template_no={}
         free_idx=1
@@ -4354,9 +4351,8 @@ def outputInfo(index,edges_info,poly_centroid,hint_info,meta_info,segmentation_c
                 anno_des=""
                 for anno in all_edge_map[seg]["半径尺寸标注"]:
                     anno_des=f"{anno_des},{anno[1]}"
-                '''des=f"是否相切:{all_edge_map[seg]["是否相切"]}\n\t\t\t半径尺寸标注:{anno_des}\n\t\t\t圆心是否在趾端延长线上:{all_edge_map[seg]["圆心是否在趾端延长线上"]}"'''
                 des=f"是否相切:{all_edge_map[seg]['是否相切']}\n\t\t\t半径尺寸标注:{anno_des}\n\t\t\t圆心是否在趾端延长线上:{all_edge_map[seg]['圆心是否在趾端延长线上']}"
-
+            
                 log_to_file(file_path, f"           标注:\n\t\t\t{des}")        
             elif edge_types[seg]=="line":
                 
@@ -4369,7 +4365,6 @@ def outputInfo(index,edges_info,poly_centroid,hint_info,meta_info,segmentation_c
                 json_data["自由边"][-1]["句柄"]=seg.ref.handle
                 json_data["自由边"][-1]["标注"]=all_edge_map[seg]
                 
-                '''des=f"是否与约束边平行:{all_edge_map[seg]["是否与约束边平行"]}\n\t\t\t是否与相邻约束边夹角为90度:{all_edge_map[seg]["是否与相邻约束边夹角为90度"]}"'''
                 des=f"是否与约束边平行:{all_edge_map[seg]['是否与约束边平行']}\n\t\t\t是否与相邻约束边夹角为90度:{all_edge_map[seg]['是否与相邻约束边夹角为90度']}"
                 for ty,annos in all_edge_map[seg].items():
                     if ty=="是否与约束边平行" or ty=="是否与相邻约束边夹角为90度" :
@@ -4468,7 +4463,6 @@ def outputInfo(index,edges_info,poly_centroid,hint_info,meta_info,segmentation_c
                         anno_des=f"{anno_des},{anno[1]}"
                     for anno in all_edge_map[corner_hole_start_edge]["尺寸参数"]:
                         anno_des2=f"{anno_des2},{anno[1]}"
-                    '''des=f"短边是否平行于相邻边:{all_edge_map[corner_hole_start_edge]["短边是否平行于相邻边"]};\n\t\t\t短边尺寸标注:{anno_des}\n\t\t\t尺寸参数:{anno_des2}"'''
                     des=f"短边是否平行于相邻边:{all_edge_map[corner_hole_start_edge]['短边是否平行于相邻边']};\n\t\t\t短边尺寸标注:{anno_des}\n\t\t\t尺寸参数:{anno_des2}"
                     log_to_file(file_path,f"        VU孔标注:\n\t\t\t{des}")
                     json_data["非自由边"][-1]["标注"]=all_edge_map[corner_hole_start_edge]
@@ -4828,7 +4822,7 @@ def outputInfo(index,edges_info,poly_centroid,hint_info,meta_info,segmentation_c
             plot_info_poly_std(constraint_edges,ori_edge_map,template_map,os.path.join(segmentation_config.poly_info_dir, f'标准肘板详细信息参考图/std_infopoly{index}.png'))
         if classification_res == "Unclassified":
             # log_to_file("./output/Unclassified.txt", f"{os.path.splitext(os.path.basename(segmentation_config.json_path))[0]}_infopoly{index}")
-            return poly_refs, classification_res,[],[]
+            return poly_refs, classification_res,[],[], None
         # else:
         #     if len(classification_res.split(","))>1:
         #         log_to_file("./output/duplicate_class.txt",f"{os.path.splitext(os.path.basename(segmentation_config.json_path))[0]}_infopoly{index}")
@@ -4936,7 +4930,6 @@ def outputInfo(index,edges_info,poly_centroid,hint_info,meta_info,segmentation_c
                         anno_des=f"{anno_des},{anno[1]}"
                     for anno in all_edge_map[corner_hole_start_edge]["尺寸参数"]:
                         anno_des2=f"{anno_des2},{anno[1]}"
-                    '''des=f"短边是否平行于相邻边:{all_edge_map[corner_hole_start_edge]["短边是否平行于相邻边"]};\n\t\t\t短边尺寸标注:{anno_des}\n\t\t\r尺寸参数:{anno_des2}"'''
                     des=f"短边是否平行于相邻边:{all_edge_map[corner_hole_start_edge]['短边是否平行于相邻边']};\n\t\t\t短边尺寸标注:{anno_des}\n\t\t\r尺寸参数:{anno_des2}"
                     log_to_file(file_path,f"        VU孔标注:\n\t\t\t{des}")
                     for seg in edge:
@@ -4994,14 +4987,12 @@ def outputInfo(index,edges_info,poly_centroid,hint_info,meta_info,segmentation_c
                 anno_des=""
                 for anno in all_edge_map[seg]["半径尺寸标注"]:
                     anno_des=f"{anno_des},{anno[1]}"
-                '''des=f"是否相切:{all_edge_map[seg]["是否相切"]}\n\t\t\t半径尺寸标注:{anno_des}\n\t\t\t圆心是否在趾端延长线上:{all_edge_map[seg]["圆心是否在趾端延长线上"]}"'''
                 des=f"是否相切:{all_edge_map[seg]['是否相切']}\n\t\t\t半径尺寸标注:{anno_des}\n\t\t\t圆心是否在趾端延长线上:{all_edge_map[seg]['圆心是否在趾端延长线上']}"
-
+            
                 log_to_file(file_path, f"           标注:\n\t\t\t{des}")        
             elif edge_types[seg]=="line":
                 
                 log_to_file(file_path, f"       起点：{seg.start_point}、终点{seg.end_point}、长度：{seg.length()}（直线）、句柄: {seg.ref.handle}")
-                '''des=f"是否与约束边平行:{all_edge_map[seg]["是否与约束边平行"]}\n\t\t\t是否与相邻约束边夹角为90度:{all_edge_map[seg]["是否与相邻约束边夹角为90度"]}"'''
                 des=f"是否与约束边平行:{all_edge_map[seg]['是否与约束边平行']}\n\t\t\t是否与相邻约束边夹角为90度:{all_edge_map[seg]['是否与相邻约束边夹角为90度']}"
                 for ty,annos in all_edge_map[seg].items():
                     if ty=="是否与约束边平行" or ty=="是否与相邻约束边夹角为90度" :
@@ -5076,9 +5067,9 @@ def outputInfo(index,edges_info,poly_centroid,hint_info,meta_info,segmentation_c
         log_to_file(file_path, f"   free_codes：{str(free_codes)}")
         log_to_file(file_path, f"   non_free_codes：{str(non_free_codes)}")
         log_to_file(file_path, f"标准肘板")
-        return poly_refs, classification_res,[],[]
+        return poly_refs, classification_res,[],[], None
 
-    return poly_refs, classification_res,meta_hints,size_hints
+    return poly_refs, classification_res,meta_hints,size_hints, json_data
 
 
 def   outputHints(meta_hints,size_hints,path="./标注.csv"):
@@ -5106,9 +5097,12 @@ def classificationAndOutputStep(indices,edges_infos,poly_centroids,hint_infos,me
     meta_hints=[]
     size_hints=[]
     class_count={}
+    all_json_data = []
     for i in range(len(indices)):
         index,edges_info,poly_centroid,hint_info,meta_info=indices[i],edges_infos[i],poly_centroids[i],hint_infos[i],meta_infos[i]
-        poly_refs, classification_res,meta_hint,size_hint=outputInfo(index,edges_info,poly_centroid,hint_info,meta_info,segmentation_config,polys[index],polyline_handles)
+        poly_refs, classification_res,meta_hint,size_hint, json_data=outputInfo(index,edges_info,poly_centroid,hint_info,meta_info,segmentation_config,polys[index],polyline_handles)
+        if json_data != None:
+            all_json_data.append(json_data)
         poly_infos.append(poly_refs)
         types.append(classification_res)
         meta_hints.extend(meta_hint)
@@ -5186,12 +5180,12 @@ def classificationAndOutputStep(indices,edges_infos,poly_centroids,hint_infos,me
     for name in names:
         if name not in class_count:
             class_unincluded.append(name)
-    for name in class_unincluded:
-        log_to_file("./output/class_not_included.txt",name)
-    for name ,count in class_count.items():
-        log_to_file("./output/class_included.txt",name+"  "+str(count))
+    '''for name in class_unincluded:
+        log_to_file("./output/class_not_included.txt",name)'''
+    '''for name ,count in class_count.items():
+        log_to_file("./output/class_included.txt",name+"  "+str(count))'''
     outputHints(meta_hints,size_hints,segmentation_config.dxf_output_folder)
-    return poly_infos,types,flags
+    return poly_infos,types,flags, all_json_data
 
 
 def get_copy_info(poly_c, copy_poly_dic):

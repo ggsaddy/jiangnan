@@ -1,23 +1,29 @@
 {
   "DAC(VU-R)":{
-    "free_edges": ["toe", "arc", "line", "arc", "line"],
+    "free_edges": ["line", "arc"],
     "non_free_edges": [{
       "type": "constraint",
       "edges": ["line"]
       }, {
       "type": "cornerhole",
-      "edges": ["arc"]
+      "edges": ["line"]
       }, {
       "type": "constraint",
       "edges": ["line"]
       }, {
       "type": "cornerhole",
-      "edges": [["arc", "line"]]
+      "edges": [["arc"]]
+      }, {
+      "type": "constraint",
+      "edges": ["line"]
+      }, {
+      "type": "cornerhole",
+      "edges": [["arc"]]
       }, {
       "type": "constraint",
       "edges": ["line"]
       }],
-    "free_code": [["is_pa"], [], [], ["long_anno"], []],
+    "free_code": [[], [], [], ["long_anno"], []],
     "no_free_code":[[], [], ["long_anno"], [], []]
   },
   "DAC(VUF-R)":{

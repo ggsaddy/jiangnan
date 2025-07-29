@@ -161,7 +161,7 @@ def process_json_data(json_path, output_path, training_data_output_folder, train
     edges_infos,poly_centroids,hint_infos,meta_infos=hint_search_step(edges_infos,poly_centroids,hint_infos,meta_infos,code_map)
     edges_infos,poly_centroids,hint_infos,meta_infos=diffusion_step(edges_infos,poly_centroids,hint_infos,meta_infos)
 
-    polys_info,classi_res,flags=classificationAndOutputStep(indices,edges_infos,poly_centroids,hint_infos,meta_infos,segmentation_config,polys,polyline_handles)
+    polys_info,classi_res,flags,all_json_data=classificationAndOutputStep(indices,edges_infos,poly_centroids,hint_infos,meta_infos,segmentation_config,polys,polyline_handles)
     
     # 获得需要去重肘板的id
     delete_bracket_ids = find_dump_bracket_ids(polys_info, classi_res, indices)

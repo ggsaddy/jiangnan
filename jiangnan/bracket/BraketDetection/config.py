@@ -53,8 +53,8 @@ class SegmentationConfig:
         self.timeout=2
 
         self.type_path = "./type.json"
-        self.standard_type_path = "./standard_type.json"
-        self.unstandard_type_path = "./unstandard_type.json"
+        self.standard_type_path = "./bracket/BraketDetection/standard_type.json"
+        self.unstandard_type_path = "./bracket/BraketDetection/unstandard_type.json"
         self.dxf_output_folder = "./output/"
 
         self.json_output_path = "./output/bracket.json"   #输出解析后的肘板轮廓，便于调整匹配算法

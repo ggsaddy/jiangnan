@@ -1,5 +1,5 @@
 import json 
-from bracket.BraketDetection.element import *
+from  bracket.BraketDetection.element import *
 import math
 from bracket.BraketDetection.plot_geo import plot_geometry,plot_polys, plot_info_poly
 import matplotlib.pyplot as plt
@@ -3082,6 +3082,25 @@ def computeBoundingBox(poly):
             y_max=edge.end_point.y
     return x_min,x_max,y_min,y_max
 
+def compute_json_bbox(poly_refs):
+    max_x = float('-inf')
+    min_x = float('inf')
+    max_y = float('-inf')
+    min_y = float('inf')
+    for seg in poly_refs:
+        # 提取起点和终点的横纵坐标
+        x_coords = [seg.start_point[0], seg.end_point[0]]
+        y_coords = [seg.start_point[1], seg.end_point[1]]
+
+        # 更新最大最小值
+        max_x = max(max_x, *x_coords)
+        min_x = min(min_x, *x_coords)
+        max_y = max(max_y, *y_coords)
+        min_y = min(min_y, *y_coords)
+
+    return (min_x-20,max_x+20,min_y-20,max_y+20)
+
+    
 
 # filter polys by area of polys's bounding boxes 
 def filterPolys(polys,max_length=15,min_length=3,t_min=5000,t_max=1000*1500,d=5):
@@ -4475,3 +4494,79 @@ def find_dump_bracket_ids(polys_info, classi_res, indices):
                         dump_bracket_ids.append(valid_indices[j])  # 默认去除靠后的
 
     return dump_bracket_ids
+
+
+def process_all_json_data(all_json_data):
+    def compute_iou_area(b1, b2):
+        x1 = max(b1[0], b2[0])
+        x2 = min(b1[2], b2[2])
+        y1 = max(b1[1], b2[1])
+        y2 = min(b1[3], b2[3])
+
+        if x1 >= x2 or y1 >= y2:
+            return 0.0, 0.0, 0.0  # no overlap
+
+        inter_area = (x2 - x1) * (y2 - y1)
+        area1 = (b1[2] - b1[0]) * (b1[3] - b1[1])
+        area2 = (b2[2] - b2[0]) * (b2[3] - b2[1])
+        return inter_area, area1, area2
+
+    def same_main_class(cls1, cls2):
+        return cls1.split('(')[0] == cls2.split('(')[0]
+
+    def count_cor_inside_bracket(cls_str):
+        if '(' in cls_str and ')' in cls_str:
+            inside = cls_str.split('(', 1)[1].split(')', 1)[0]
+            inside = inside.split('-')
+            count = 0
+            for cor in inside:
+                if cor != 'KS':
+                    count += 1
+            return count
+        return 0
+
+    n = len(all_json_data)
+    removed = [False] * n  # 标记是否被删除
+
+    for i in range(n):
+        if removed[i]:
+            continue
+        bbox_i = all_json_data[i]["bbox"]
+        cls_i = all_json_data[i]["肘板类别"]
+
+        for j in range(i + 1, n):
+            if removed[j]:
+                continue
+            bbox_j = all_json_data[j]["bbox"]
+            cls_j = all_json_data[j]["肘板类别"]
+
+            inter_area, area_i, area_j = compute_iou_area(bbox_i, bbox_j)
+            if area_i == 0 or area_j == 0:
+                continue
+            if (inter_area / area_i > 0.9) and (inter_area / area_j > 0.9):
+                if same_main_class(cls_i, cls_j):
+                    count_i = count_cor_inside_bracket(cls_i)
+                    count_j = count_cor_inside_bracket(cls_j)
+                    if count_i > count_j:
+                        removed[j] = True
+                    elif count_j > count_i:
+                        removed[i] = True
+                    else:
+                        removed[j] = True  # 默认保留靠前的
+
+    # 构造最终结果
+    res = [all_json_data[i] for i in range(n) if not removed[i]]
+
+    # 对res进行多级剖图复制
+    res2 = []
+    all_bbox = []
+    for json_data in res:
+        all_bbox.append(json_data["bbox"])
+        time = json_data["调用总次数"]
+        i = 0
+        while i < time:
+            res2.append(json_data)
+            i = i + 1
+
+
+    return res2, all_bbox

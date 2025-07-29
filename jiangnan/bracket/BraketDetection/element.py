@@ -272,7 +272,7 @@ class DText(DElement):
         if is_mtext:
             new_bound={"x1":self.insert.x,"x2":self.insert.x,"y1":self.insert.y,"y2":self.insert.y}
             self.bound=new_bound
-  
+
     def __repr__(self):  
         return f"Text({self.insert}, color:{self.color},content:{self.content},height:{self.height},handle:{self.handle})"  
     def  __eq__(self,other):
