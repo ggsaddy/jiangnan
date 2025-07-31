@@ -32,6 +32,10 @@ class DPoint:
             raise IndexError("Point index out of range (0 or 1 expected)") 
     def __repr__(self):  
         return f"Point({self.x}, {self.y})"  
+    
+    def to_dict(self):
+        return {"x": self.x, "y": self.y}
+
     def as_tuple(self):
         return (self.x,self.y)
 
@@ -272,9 +276,21 @@ class DText(DElement):
         if is_mtext:
             new_bound={"x1":self.insert.x,"x2":self.insert.x,"y1":self.insert.y,"y2":self.insert.y}
             self.bound=new_bound
-
+  
     def __repr__(self):  
-        return f"Text({self.insert}, color:{self.color},content:{self.content},height:{self.height},handle:{self.handle})"  
+        return f"Text({self.insert}, color:{self.color},content:{self.content},height:{self.height},handle:{self.handle})"
+
+    def to_dict(self):
+        return {
+            "type": "DText",
+            "bound": self.bound,
+            "insert": {"x": self.insert.x, "y": self.insert.y},
+            "color": self.color,
+            "content": self.content,
+            "height": self.height,
+            "handle": self.handle
+        }
+
     def  __eq__(self,other):
         if not isinstance(other,DText):
             return False
@@ -342,6 +358,18 @@ class DDimension(DElement):
   
     def __repr__(self):  
         return f"Dimension(pos:{self.textpos}, text:{self.text},color:{self.color},measurement:{self.measurement},defpoints:{self.defpoints},dimtype:{self.dimtype},handle:{self.handle})"  
+
+    def to_dict(self):
+        return {
+            "type": "DDimension",
+            "textpos": {"x": self.textpos.x, "y": self.textpos.y},
+            "text": self.text,
+            "color": self.color,
+            "measurement": self.measurement,
+            "defpoints": [{"x": p.x, "y": p.y} for p in self.defpoints],
+            "dimtype": self.dimtype,
+            "handle": self.handle
+        }
 
     def transform(self):
         self.textpos=self.transform_point(self.textpos,self.meta)

@@ -1256,6 +1256,7 @@ def readJson(path,segmentation_config):
         sign_handles=[]
         polyline_handles=[]
         hatch_polys = []
+        jg_s = set()
         for ele in data_list[0]:
             if ele["type"]=="lwpolyline":
                 vs=ele["vertices"]
@@ -1266,11 +1267,17 @@ def readJson(path,segmentation_config):
                     end=DPoint(vs[-1][2],vs[-1][3])
                     if DSegment(start,end).length()>100 and DSegment(start,end).length() <1000:
                         sign_handles.append(ele["handle"])
-                elif len(vs)==5 and len(vs_type)==5 and vs_type==["line","line","line","line","line"] and len(vs_width)==6 and vs_width[0]==[0,0] and vs_width[2]==[0,0] and vs_width[4]==[0,0] and vs_width[5]==[0,0] and vs_width[3][0]==0 and vs_width[3][1]>0 and vs_width[1][0]>0 and vs_width[1][1]==0:
-                    start=DPoint(vs[0][0],vs[0][1])
-                    end=DPoint(vs[-1][2],vs[-1][3])
-                    if DSegment(start,end).length()>100 and DSegment(start,end).length() <1000:
-                        sign_handles.append(ele["handle"])
+                # elif len(vs)==5 and len(vs_type)==5 and vs_type==["line","line","line","line","line"] and len(vs_width)==6 and vs_width[0]==[0,0] and vs_width[2]==[0,0] and vs_width[4]==[0,0] and vs_width[5]==[0,0] and vs_width[3][0]==0 and vs_width[3][1]>0 and vs_width[1][0]>0 and vs_width[1][1]==0:
+                #     start=DPoint(vs[0][0],vs[0][1])
+                #     end=DPoint(vs[-1][2],vs[-1][3])
+                #     if DSegment(start,end).length()>100 and DSegment(start,end).length() <1000:
+                #         sign_handles.append(ele["handle"])
+                elif len(vs)==4 and len(vs_type)==4 and vs_type==["line","line","line","line"] and ele["isClosed"]==True:
+                    v1,v2,v3,v4=DPoint(vs[0][2],vs[0][3]),DPoint(vs[1][2],vs[1][3]),DPoint(vs[2][2],vs[2][3]),DPoint(vs[3][2],vs[3][3])
+                    mid1=DPoint(v1.x+v3.x,v1.y+v3.y)
+                    mid2=DPoint(v2.x+v4.x,v2.y+v4.y)
+                    if DSegment(mid1,mid2).length()<4 and abs(DSegment(v1,v3).length()-DSegment(v2,v4).length())<10 and  DSegment(v1,v3).length() <1000:
+                        jg_s.add(ele["handle"])
             elif ele["type"]=="polyline":
                 polyline_handles.append(ele["handle"])
             elif ele["type"]=="hatch":
@@ -1287,7 +1294,7 @@ def readJson(path,segmentation_config):
        
 
         #inner block 
-        jg_s = set()
+
         for name,sub_data in  data_list[1].items():
             st_prefixs = ["L", "HP"]
             if any(name.startswith(prefix) for prefix in st_prefixs):
@@ -4282,6 +4289,7 @@ def readJson_inbbpolys(path,segmentation_config, bb_polys):
         sign_handles=[]
         polyline_handles=[]
         hatch_polys = []
+        jg_s = set()
         for ele in data_list_filtered:
             if ele["type"]=="lwpolyline":
                 vs=ele["vertices"]
@@ -4292,11 +4300,17 @@ def readJson_inbbpolys(path,segmentation_config, bb_polys):
                     end=DPoint(vs[-1][2],vs[-1][3])
                     if DSegment(start,end).length()>100 and DSegment(start,end).length() <1000:
                         sign_handles.append(ele["handle"])
-                elif len(vs)==5 and len(vs_type)==5 and vs_type==["line","line","line","line","line"] and len(vs_width)==6 and vs_width[0]==[0,0] and vs_width[2]==[0,0] and vs_width[4]==[0,0] and vs_width[5]==[0,0] and vs_width[3][0]==0 and vs_width[3][1]>0 and vs_width[1][0]>0 and vs_width[1][1]==0:
-                    start=DPoint(vs[0][0],vs[0][1])
-                    end=DPoint(vs[-1][2],vs[-1][3])
-                    if DSegment(start,end).length()>100 and DSegment(start,end).length() <1000:
-                        sign_handles.append(ele["handle"])
+                # elif len(vs)==5 and len(vs_type)==5 and vs_type==["line","line","line","line","line"] and len(vs_width)==6 and vs_width[0]==[0,0] and vs_width[2]==[0,0] and vs_width[4]==[0,0] and vs_width[5]==[0,0] and vs_width[3][0]==0 and vs_width[3][1]>0 and vs_width[1][0]>0 and vs_width[1][1]==0:
+                #     start=DPoint(vs[0][0],vs[0][1])
+                #     end=DPoint(vs[-1][2],vs[-1][3])
+                #     if DSegment(start,end).length()>100 and DSegment(start,end).length() <1000:
+                #         sign_handles.append(ele["handle"])
+                elif len(vs)==4 and len(vs_type)==4 and vs_type==["line","line","line","line"] and ele["isClosed"]==True:
+                    v1,v2,v3,v4=DPoint(vs[0][2],vs[0][3]),DPoint(vs[1][2],vs[1][3]),DPoint(vs[2][2],vs[2][3]),DPoint(vs[3][2],vs[3][3])
+                    mid1=DPoint(v1.x+v3.x,v1.y+v3.y)
+                    mid2=DPoint(v2.x+v4.x,v2.y+v4.y)
+                    if DSegment(mid1,mid2).length()<4 and abs(DSegment(v1,v3).length()-DSegment(v2,v4).length())<10 and  DSegment(v1,v3).length() <1000:
+                        jg_s.add(ele["handle"])
             elif ele["type"]=="polyline":
                 polyline_handles.append(ele["handle"])
             elif ele["type"]=="hatch":
@@ -4313,7 +4327,7 @@ def readJson_inbbpolys(path,segmentation_config, bb_polys):
        
 
         #inner block 
-        jg_s = set()
+
         for name,sub_data in  data_list[1].items():
             st_prefixs = ["L", "HP"]
             if any(name.startswith(prefix) for prefix in st_prefixs):
@@ -4569,4 +4583,4 @@ def process_all_json_data(all_json_data):
             i = i + 1
 
 
-    return res2, all_bbox
+    return all_bbox, res2

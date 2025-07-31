@@ -52,7 +52,7 @@ class SegmentationConfig:
         self.max_workers=4
         self.timeout=2
 
-        self.type_path = "./type.json"
+        self.type_path = "./bracket/BraketDetection/type.json"
         self.standard_type_path = "./bracket/BraketDetection/standard_type.json"
         self.unstandard_type_path = "./bracket/BraketDetection/unstandard_type.json"
         self.dxf_output_folder = "./output/"
@@ -114,8 +114,8 @@ class SegmentationConfig:
         self.is_parallel_tolerance=0.15
         #readJson
         self.line_type=["BYLAYER","CONTINUOUS","BYBLOCK"]
-        self.color=[6,8]
-        self.constraint_color=[1,3]
+        self.color=[6]
+        self.constraint_color=[1,3,80]
         self.element_type=["line","arc","lwpolyline","polyline","spline"]
 
         self.stiffener_name = ["Stiffener_Invisible","Stiffener_Visible"]
@@ -125,7 +125,7 @@ class SegmentationConfig:
         self.remove_layername.extend(self.stiffener_name)
         #check is bracket
         #偏离凸多边形的程度
-        self.near_convex_tolerance=0.05
+        self.near_convex_tolerance=0.07
         self.near_rectangle_tolerance = 0.0002
         #自由边角度下限
         self.min_angle_in_free_edge=45

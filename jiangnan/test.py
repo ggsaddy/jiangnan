@@ -1,3 +1,2 @@
-import os
-output_folder = os.path.dirname("./data/test0717.dxf")
-print(output_folder)  # This will print "./data"
+file_name = 'test.dxf'
+print(file_name.rsplit('.', 1)[1].lower())

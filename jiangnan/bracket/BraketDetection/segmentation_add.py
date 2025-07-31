@@ -272,30 +272,30 @@ if __name__ == '__main__':
         add_bboxs.append((min_x-20,max_x+20,min_y-20,max_y+20))
         add_ids.append(indices[idx])
     
-    remain_bboxs=read_json_(json_path,"Braket")
-    count,old_bboxs,old_ids=read_bboxes_with_ids(poly_path)
-    b_set=set()
-    for bbox in remain_bboxs:
-        x_min,x_max,y_min,y_max=bbox
-        b_set.add((int(x_min),int(x_max),int(y_min),int(y_max)))
-    actual_bboxs=[]
-    actual_ids=[]
-    for i,bbox in enumerate(old_bboxs):
-        x_min,x_max,y_min,y_max=bbox
-        if (int(x_min),int(x_max),int(y_min),int(y_max)) not in b_set:
-            #删除包围盒
+    # remain_bboxs=read_json_(json_path,"Braket")
+    # count,old_bboxs,old_ids=read_bboxes_with_ids(poly_path)
+    # b_set=set()
+    # for bbox in remain_bboxs:
+    #     x_min,x_max,y_min,y_max=bbox
+    #     b_set.add((int(x_min),int(x_max),int(y_min),int(y_max)))
+    # actual_bboxs=[]
+    # actual_ids=[]
+    # for i,bbox in enumerate(old_bboxs):
+    #     x_min,x_max,y_min,y_max=bbox
+    #     if (int(x_min),int(x_max),int(y_min),int(y_max)) not in b_set:
+    #         #删除包围盒
 
-            id=old_ids[i]
-        else:
-            id=old_ids[i]
-            actual_bboxs.append(bbox)
-            actual_ids.append(id)
+    #         id=old_ids[i]
+    #     else:
+    #         id=old_ids[i]
+    #         actual_bboxs.append(bbox)
+    #         actual_ids.append(id)
 
-    print(len(remain_bboxs),len(old_bboxs),len(add_bboxs))
-    actual_bboxs=actual_bboxs+add_bboxs
-    for id in add_ids:
-        actual_ids.append(id+count)
-    write_bboxes_with_ids(os.path.join(segmentation_config.dxf_output_folder, f"polys.txt"),actual_bboxs,actual_ids,count+len(bboxs))
+    # print(len(remain_bboxs),len(old_bboxs),len(add_bboxs))
+    # actual_bboxs=actual_bboxs+add_bboxs
+    # for id in add_ids:
+    #     actual_ids.append(id+count)
+    # write_bboxes_with_ids(os.path.join(segmentation_config.dxf_output_folder, f"polys.txt"),actual_bboxs,actual_ids,count+len(bboxs))
     
     dxf_path = os.path.splitext(segmentation_config.json_path)[0] + '.dxf'
     dxf_output_folder = segmentation_config.dxf_output_folder

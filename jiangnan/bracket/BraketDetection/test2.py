@@ -212,7 +212,7 @@ def process_json_data(json_path, output_path, training_data_output_folder, train
             continue
         actual_bboxs.append((min_x-20,max_x+20,min_y-20,max_y+20))
         actual_ids.append(indices[idx])
-    write_bboxes_with_ids(os.path.join(segmentation_config.dxf_output_folder, f"polys.txt"),actual_bboxs,actual_ids,len(bboxs))
+    # write_bboxes_with_ids(os.path.join(segmentation_config.dxf_output_folder, f"polys.txt"),actual_bboxs,actual_ids,len(bboxs))
     
     dxf_path = os.path.splitext(segmentation_config.json_path)[0] + '.dxf'
     dxf_output_folder = segmentation_config.dxf_output_folder

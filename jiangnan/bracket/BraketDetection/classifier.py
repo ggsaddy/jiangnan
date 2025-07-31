@@ -522,6 +522,65 @@ def match_template(edges,detected_free_edges,template,edge_types,thickness):
                 template_map[key]=non_free_edges[j]
                 j+=1
     return template_map
+def is_duichen(edges,detected_free_edges,edge_types,thickness=0):
+    if thickness>25:
+        ignore_types=["arc"]
+    else:
+        ignore_types=["line"]
+    non_free_edges=[]
+    non_free_edges_types=[]
+    free_edges=[]
+    free_edges_types=[]
+    for edge in detected_free_edges[0]:
+        free_edges.append(edge)
+        free_edges_types.append(edge_types[edge])
+    for i,edge in enumerate(edges):
+        if (not edge[0].isConstraint) and (not edge[0].isCornerhole):
+            continue
+        if edge[0].isCornerhole:
+            if len(edge)==1 and ((isinstance(edge[0].ref,DLine) and ignore_types[0]=="line") or (isinstance(edge[0].ref,DArc) and ignore_types[0]=="arc")):
+                continue
+            non_free_edges_types.append('cornerhole')
+            segs=[]
+            for s in edge:
+                segs.append(s)
+            non_free_edges.append(segs)
+        else:
+            non_free_edges_types.append('constraint')
+            segs=[]
+            for s in edge:
+                segs.append(s)
+            non_free_edges.append(segs)
+    r_non_free_edges=non_free_edges[::-1]
+    r_non_free_edges_types=non_free_edges_types[::-1]
+    r_free_edges=free_edges[::-1]
+    r_free_edges_types=free_edges_types[::-1]
+    new_edges=[]
+    for edge in r_non_free_edges:
+        new_edges.append(edge[::-1])
+    r_non_free_edges=new_edges
+    ordered_str=""
+    ordered_str+="free:"
+    for t in free_edges_types:
+        ordered_str+=t
+    ordered_str+="non_free:"
+    for i,t in enumerate(non_free_edges_types):
+        ordered_str+=t
+        for s in  non_free_edges[i]:
+            ordered_str+="line" if isinstance(s.ref,DLine) else "arc"
+    r_ordered_str=""
+    r_ordered_str+="free:"
+    for t in r_free_edges_types:
+        r_ordered_str+=t
+    r_ordered_str+="non_free:"
+    for i,t in enumerate(r_non_free_edges_types):
+        r_ordered_str+=t
+        for s in  r_non_free_edges[i]:
+            r_ordered_str+="line" if isinstance(s.ref,DLine) else "arc"
+    if ordered_str==r_ordered_str:
+        return True
+    else:
+        return False
 # 标准肘板的匹配分类函数
 def poly_classifier(features,all_anno,poly_refs, texts,dimensions,conerhole_num, poly_free_edges, edges, thickness, feature_map, edge_types, standard_classification_file_path, info_json_path, keyname, is_output_json = False):
     classification_table = load_classification_table(standard_classification_file_path)
@@ -615,30 +674,30 @@ def poly_classifier(features,all_anno,poly_refs, texts,dimensions,conerhole_num,
 
 
     # 对肘板轮廓进行输出
-    if is_output_json:
-        geometry_info = {
-            keyname: {
-                "free_edges_sequence": free_edges_sequence,
-                "non_free_edges_sequence": edges_sequence
-            }
-        }
-        try:
-            # 检查目标文件是否存在，如果存在则读取并更新
-            try:
-                with open(info_json_path, "r") as file:
-                    existing_data = json.load(file)
-            except FileNotFoundError:
-                existing_data = {}
+    # if is_output_json and segmentation_config.mode=="dev":
+    #     geometry_info = {
+    #         keyname: {
+    #             "free_edges_sequence": free_edges_sequence,
+    #             "non_free_edges_sequence": edges_sequence
+    #         }
+    #     }
+    #     try:
+    #         # 检查目标文件是否存在，如果存在则读取并更新
+    #         try:
+    #             with open(info_json_path, "r") as file:
+    #                 existing_data = json.load(file)
+    #         except FileNotFoundError:
+    #             existing_data = {}
 
-            # 更新数据
-            existing_data.update(geometry_info)
+    #         # 更新数据
+    #         existing_data.update(geometry_info)
 
-            # 写入文件
-            with open(info_json_path, "w") as file:
-                json.dump(existing_data, file, indent=4)
+    #         # 写入文件
+    #         with open(info_json_path, "w") as file:
+    #             json.dump(existing_data, file, indent=4)
 
-        except Exception as e:
-            print(f"Error writing to JSON file: {e}")
+    #     except Exception as e:
+    #         print(f"Error writing to JSON file: {e}")
 
 
     # step5: 固定边轮廓严格匹配+角隅孔非严格匹配（直线角隅孔可能不画）
@@ -734,6 +793,9 @@ def poly_classifier(features,all_anno,poly_refs, texts,dimensions,conerhole_num,
             continue
         free_code = classification_table[type_name]["free_code"]
         no_free_code = classification_table[type_name]["no_free_code"]
+        reversed_free_code = free_code[::-1]
+        reversed_no_free_code = no_free_code[::-1]
+
         template_map=match_template(edges,poly_free_edges,classification_table[type_name],edge_types,thickness=thickness)
         template_free_code = []
         free_idx = 1
@@ -742,10 +804,9 @@ def poly_classifier(features,all_anno,poly_refs, texts,dimensions,conerhole_num,
                 template_free_code.append(free_code[free_idx - 1])
             free_idx += 1
         r_template_free_code = template_free_code[::-1]
-        r_no_free_code = no_free_code[::-1]
 
         # TODO: 添加轮廓是否对称的调用
-        flag = True
+        flag = is_duichen(edges,poly_free_edges,edge_types,thickness=thickness)
 
         if flag:
             f_score1 = 0
@@ -823,7 +884,7 @@ def poly_classifier(features,all_anno,poly_refs, texts,dimensions,conerhole_num,
                 if f'constraint{constarint_idx}' in template_map:
                     seg = template_map[f'constraint{constarint_idx}'][0]
                     f = feature_map[seg]
-                    c = r_no_free_code[constarint_idx + cornerhole_idx - 2]
+                    c = reversed_no_free_code[constarint_idx + cornerhole_idx - 2]
                     if eva_c_f(c, f):
                         f_score2 += 1
                     else:
@@ -837,7 +898,7 @@ def poly_classifier(features,all_anno,poly_refs, texts,dimensions,conerhole_num,
                         break
                     seg = template_map[f'cornerhole{cornerhole_idx}'][0]
                     f = feature_map[seg]
-                    c = r_no_free_code[constarint_idx + cornerhole_idx - 2]
+                    c = reversed_no_free_code[constarint_idx + cornerhole_idx - 2]
                     if eva_c_f(c, f):
                         f_score2 += 1
                     else:
@@ -858,7 +919,8 @@ def poly_classifier(features,all_anno,poly_refs, texts,dimensions,conerhole_num,
                     continue
                 seg=template_map[f'free{free_idx}'][0]
                 f = feature_map[seg]
-                c = template_free_code[free_idx - 1]
+                c = template_free_code[idx - 1]
+                idx += 1
                 if eva_c_f(c, f):
                     f_score += 1
                 else:
@@ -1076,12 +1138,11 @@ def is_new_feature_pass(matched_type, classification_table,edges, poly_free_edge
     while f'free{free_idx}' in template_map:
         if len(template_map[f'free{free_idx}']) != 0:
             template_free_code.append(free_code[free_idx - 1])
-            free_idx += 1
+        free_idx += 1
     r_template_free_code = template_free_code[::-1]
 
     # 自由边特征比对（轮廓对称会正反进行）
-    # TODO: 添加轮廓是否对称的调用
-    flag = True
+    flag = is_duichen(edges,poly_free_edges,edge_types,thickness=thickness)
 
     if flag:
         f_score1 = 0
@@ -1139,7 +1200,8 @@ def is_new_feature_pass(matched_type, classification_table,edges, poly_free_edge
                 continue
             seg=template_map[f'free{free_idx}'][0]
             f = feature_map[seg]
-            c = template_free_code[free_idx - 1]
+            c = template_free_code[idx - 1]
+            idx += 1
             if eva_c_f(c, f):
                 f_score += 1
             else:
