@@ -8,19 +8,19 @@ import numpy as np
 from glob import glob 
 from tqdm import tqdm 
 from ultralytics import YOLO
-from preprocess.load import dxf2json
-from convert2png_v2 import DXFRenderer
-from yolo_test import predict_image, visualize_predictions, convert_png2dxf_coord ,nms, predict_image_tta
-from draw_dxf import draw_rectangle_in_dxf, yoloxyxy2dxfxyxy
-from load_v2 import DXFConverterV2
-from evaluate import evaluate, convert, analyze_confidence_thresholds, calculate_iou, calculate_overlap_rate
+from holes.load import dxf2json
+from holes.convert2png_v2 import DXFRenderer
+from holes.yolo_test import predict_image, visualize_predictions, convert_png2dxf_coord ,nms, predict_image_tta
+from holes.draw_dxf import draw_rectangle_in_dxf, yoloxyxy2dxfxyxy
+from holes.load_v2 import DXFConverterV2
+from holes.evaluate import evaluate, convert, analyze_confidence_thresholds, calculate_iou, calculate_overlap_rate
 # from statistic_holes import EntityAnalyzer
-from filter_bbox import load_data_and_get_main_bbox
-from extract_dimen import DimensionExtractor
+from holes.filter_bbox import load_data_and_get_main_bbox
+from holes.extract_dimen import DimensionExtractor
 # 新增导入模块
-from extract_allbe import EntityExtractor as AllbeExtractor
-from extract_allbe_detailed import EntityExtractor as AllbeDetailedExtractor
-from extract_close import CloseExtractor
+from holes.extract_allbe import EntityExtractor as AllbeExtractor
+from holes.extract_allbe_detailed import EntityExtractor as AllbeDetailedExtractor
+from holes.extract_close import CloseExtractor
 
 def clear_space():
     shutil.rmtree('sliding', ignore_errors=True)

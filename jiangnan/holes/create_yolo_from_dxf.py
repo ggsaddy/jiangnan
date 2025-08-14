@@ -34,9 +34,9 @@ import shutil
 from pathlib import Path
 import numpy as np
 from tqdm import tqdm
-from load import dxf2json
-from load_v2 import DXFConverterV2
-from convert2png_v2 import DXFRenderer, convert_png2dxf_coord
+from holes.load import dxf2json
+from holes.load_v2 import DXFConverterV2
+from holes.convert2png_v2 import DXFRenderer, convert_png2dxf_coord
 
 class DXF2YOLO:
     def __init__(self, patch_size=1024, overlap=0.5, bbox_overlap_threshold=0.25):

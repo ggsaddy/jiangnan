@@ -1,11 +1,11 @@
 import os
 import sys
 import io
-from load import dxf2json
+from bracket.BraketDetection.load import dxf2json
 import json
-from element import *
-from config import *
-from utils import readJson, findAllTextsAndDimensions, processDimensions, processTexts, findClosedPolys_via_BFS,process_lwpoline
+from bracket.BraketDetection.element import *
+from bracket.BraketDetection.config import *
+from bracket.BraketDetection.utils import readJson, findAllTextsAndDimensions, processDimensions, processTexts, findClosedPolys_via_BFS,process_lwpoline
 from shapely.geometry import Polygon, Point
 import re
 import ast

@@ -224,7 +224,16 @@ def multi_detect(filepath, output_path=None):
     json_result, bbox_result, vis_axis, false_count = segment_of_multi(components, insert_info)
     print("可视化中...")
     return json_result, bbox_result, vis_axis, false_count
-
+def multi_detect_bound(filepath, output_path=None,bound_json=None):
+    """多级剖面图函数入口
+    filepath: json文件路径"""
+    start = time.perf_counter()
+    print("正在加载数据，检测器值...")
+    components, insert_info = load_data_and_get_main_bbox_bound(filepath, threshold=0.1, bound_json=bound_json)
+    
+    json_result, bbox_result, vis_axis, false_count = segment_of_multi(components, insert_info)
+    print("可视化中...")
+    return json_result, bbox_result, vis_axis, false_count
 def multi_detect_local(filepath, output_path=None):
     """图面分割本地测试函数"""
     start = time.perf_counter()

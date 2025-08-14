@@ -1,12 +1,12 @@
-from element import *
-import matplotlib.pyplot as plt
-from utils import *
-from infoextraction import *
+from bracket.BraketDetection.element import *
+import bracket.BraketDetection.matplotlib.pyplot as plt
+from bracket.BraketDetection.utils import *
+from bracket.BraketDetection.infoextraction import *
 import numpy as np
 import os
-from plot_geo import *
-from draw_dxf import *
-from config import *
+from bracket.BraketDetection.plot_geo import *
+from bracket.BraketDetection.draw_dxf import *
+from bracket.BraketDetection.config import *
 
 
             

@@ -1161,7 +1161,7 @@ def is_new_feature_pass(matched_type, classification_table,edges, poly_free_edge
             f = feature_map[seg]
             c = template_free_code[idx - 1]
             idx += 1
-            if eva_c_f(c, f):
+            if eva_c_f_new(c, f):
                 f_score1 += 1
             else:
                 is_match_flag1 = False
@@ -1179,7 +1179,7 @@ def is_new_feature_pass(matched_type, classification_table,edges, poly_free_edge
             f = feature_map[seg]
             c = r_template_free_code[idx - 1]
             idx += 1
-            if eva_c_f(c, f):
+            if eva_c_f_new(c, f):
                 f_score2 += 1
             else:
                 is_match_flag2 = False
@@ -1202,7 +1202,7 @@ def is_new_feature_pass(matched_type, classification_table,edges, poly_free_edge
             f = feature_map[seg]
             c = template_free_code[idx - 1]
             idx += 1
-            if eva_c_f(c, f):
+            if eva_c_f_new(c, f):
                 f_score += 1
             else:
                 is_match_flag = False

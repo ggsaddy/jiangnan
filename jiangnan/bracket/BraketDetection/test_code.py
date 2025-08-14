@@ -68,7 +68,7 @@
 # from bracket_parameter_extraction import *
 # print(parse_elbow_plate("12x150.0 %%% F3","top",False))
 # print(is_useful_text("12x150.0 %%% F3"))
-from element import *
+from bracket.BraketDetection.element import *
 def point_segment_position(point: DPoint, segment: DSegment, epsilon=0.1):
     # 向量AB表示线段的方向
     AB = DPoint(segment.end_point.x - segment.start_point.x, segment.end_point.y - segment.start_point.y)

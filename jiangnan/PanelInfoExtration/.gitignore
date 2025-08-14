@@ -1,0 +1,20 @@
+# Ignore Python cache files
+__pycache__/
+*.py[cod]
+
+# Ignore output files
+output/
+output2/
+data/
+gt/
+DGCNN/data_folder
+DGCNN/cpkt
+training_img/
+
+# Ignore virtual environments (optional, if you use venv)
+venv/
+env/
+
+# Ignore IDE configuration files (optional, depending on your IDE)
+.vscode/
+.idea/

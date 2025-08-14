@@ -1053,17 +1053,30 @@ class CloseExtractor:
         bbox_list: bbox列表
         require_degree_2: 是否要求每个节点的度都为2
         visualize: 是否进行可视化
+        
+        返回:
+        Dict: 提取的闭合连通分量数据
         """
         result = self.extract_closed_components(bbox_list, require_degree_2)
         
-        with open(output_path, 'w', encoding='utf-8') as f:
-            json.dump(result, f, indent=4, ensure_ascii=False)
-        
-        print(f"结果已保存到: {output_path}")
+        if output_path:
+            try:
+                # 确保目录存在
+                import os
+                os.makedirs(os.path.dirname(output_path), exist_ok=True)
+                
+                with open(output_path, 'w', encoding='utf-8') as f:
+                    json.dump(result, f, indent=4, ensure_ascii=False)
+                
+                print(f"结果已保存到: {output_path}")
+            except Exception as e:
+                print(f"保存文件失败: {e}")
         
         # 如果需要可视化，则调用可视化函数
         if visualize:
             self.visualize(result)
+        
+        return result
 
     def calculate_component_bbox(self, entities: List[Dict]) -> List[float]:
         """

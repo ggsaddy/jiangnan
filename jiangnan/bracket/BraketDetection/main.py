@@ -1,15 +1,15 @@
-from element import *
+from bracket.BraketDetection.element import *
 import random
 import matplotlib.pyplot as plt
-from utils import *
-from infoextraction import *
+from bracket.BraketDetection.utils import *
+from bracket.BraketDetection.infoextraction import *
 import numpy as np
-from plot_geo import *
-from config import *
+from bracket.BraketDetection.plot_geo import *
+from bracket.BraketDetection.config import *
 # from DGCNN_model import *
 from tqdm import tqdm
-from classifier import *
-from draw_dxf import *
+from bracket.BraketDetection.classifier import *
+from bracket.BraketDetection.draw_dxf import *
 
 if __name__ == '__main__':
     segmentation_config=SegmentationConfig()

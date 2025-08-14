@@ -1,5 +1,5 @@
 import json 
-from  bracket.BraketDetection.element import *
+from bracket.BraketDetection.element import *
 import math
 from bracket.BraketDetection.plot_geo import plot_geometry,plot_polys, plot_info_poly
 import matplotlib.pyplot as plt
@@ -1115,6 +1115,7 @@ def process_block(T_is_contained,block_datas,blockName,scales,rotation,insert,bl
                 # if ele.get("linetype") is not None and ele["linetype"] in linetype:
                 #     continue
                 content=ele["content"].strip()
+                content=re.sub(r'<[^<>]*>','',content)
                 for ct in content.split("/"):
                     if ct.strip()!="":
                         if "R" in ct.strip():
@@ -1131,7 +1132,7 @@ def process_block(T_is_contained,block_datas,blockName,scales,rotation,insert,bl
             #     continue
             string = ele["text"].strip()
             # cleaned_string = re.sub(r"^\\A1;", "", string)
-            cleaned_string=string
+            cleaned_string=re.sub(r'<[^<>]*>','',string)
             for ct in cleaned_string.split("/"):
                 if ct.strip()!="":
                     if "R" in ct.strip():
@@ -1317,6 +1318,59 @@ def readJson(path,segmentation_config):
                         end=DPoint(vs[-1][2],vs[-1][3])
                         if DSegment(start,end).length()>100 and DSegment(start,end).length() <1000:
                             sign_handles.append(ele["handle"])
+            # 联通符
+            lines = []
+            solids = []
+            flag = True
+            for ele in sub_data:
+                if ele["type"]=="solid":
+                    solids.append(ele)
+                elif ele["type"] == "line":
+                    lines.append(ele)
+                else:
+                    flag = False
+                    break
+            if len(solids)!=2 or len(lines)!=2:
+                flag = False
+            if flag:
+                s1,s2,l1,l2=solids[0], solids[1], lines[0], lines[1]
+                if s1["vtx2"] != s1["vtx3"] or s2["vtx2"] != s2["vtx3"]:
+                    continue
+                seg1 = DSegment(DPoint(s1["vtx2"][0], s1["vtx2"][1]), DSegment(DPoint(s1["vtx0"][0], s1["vtx0"][1]), (DPoint(s1["vtx1"][0], s1["vtx1"][1]))).mid_point())
+                seg2 = DSegment(DPoint(l1["start"][0], l1["start"][1]),DPoint(l1["end"][0], l1["end"][1]))
+                seg3 = DSegment(DPoint(s2["vtx2"][0], s2["vtx2"][1]), DSegment(DPoint(s2["vtx0"][0], s2["vtx0"][1]), (DPoint(s2["vtx1"][0], s2["vtx1"][1]))).mid_point())
+                seg4 = DSegment(DPoint(l2["start"][0], l2["start"][1]),DPoint(l2["end"][0], l2["end"][1]))
+
+                if DSegment(seg1.end_point, seg2.start_point).length() < DSegment(seg1.end_point, seg2.end_point).length():
+                    if DSegment(seg1.end_point, seg2.start_point).length() > 5:
+                        continue
+                    p2 = seg2.start_point
+                    p3 = seg2.end_point
+                else:
+                    if DSegment(seg1.end_point, seg2.end_point).length() > 5:
+                        continue
+                    p2 = seg2.end_point
+                    p3 = seg2.start_point
+                p1 = seg1.start_point
+                if DSegment(seg3.end_point, seg4.start_point).length() < DSegment(seg3.end_point, seg4.end_point).length():
+                    if DSegment(seg3.end_point, seg4.start_point).length() > 5:
+                        continue
+                    p5 = seg4.start_point
+                    p4 = seg4.end_point
+                else:
+                    if DSegment(seg1.end_point, seg2.end_point).length() > 5:
+                        continue
+                    p5 = seg4.end_point
+                    p4 = seg4.start_point
+                p6 = seg3.start_point
+                if DSegment(p3, p4).length() > 5:
+                    continue
+                if DSegment(DSegment(p1, p6).mid_point(), p3).length() > 5:
+                    continue
+                if DSegment(DSegment(p2, p5).mid_point(), p3).length() > 5:
+                    continue
+                for ele in sub_data:
+                    sign_handles.append(ele["handle"])
 
 
         return elements,segments+arc_splits,ori_segments,stiffeners,sign_handles,polyline_handles,hatch_polys,jg_s
@@ -1469,8 +1523,8 @@ def find_all_intersections(segments, segmentation_config,epsilon=0.1):
     # Divide segments into chunks of size k
     segment_chunks = [segments[i:i + k] for i in range(0, n, k)]
     s_l=[len(c) for c in segment_chunks]
-    print(len(segment_chunks))
-    print(s_l)
+    # print(len(segment_chunks))
+    # print(s_l)
     # Use ProcessPoolExecutor for parallel computation
     with ProcessPoolExecutor(max_workers=L) as executor:
         partial_intersections = partial(compute_intersections, chunk2=seg_block,epsilon=epsilon)
@@ -2252,8 +2306,8 @@ def removeReferenceLines(elements,texts,initial_segments,all_segments,point_map,
         vl2.append(DSegment(DPoint(x_1,y),DPoint(x,y+500)))
         vl2.append(DSegment(DPoint(x_2,y),DPoint(x,y+500)))
     #print(len(vertical_lines))
-    print(len(vertical_lines)*len(all_segments))
-    print(len(vl2)*len(all_segments))
+    # print(len(vertical_lines)*len(all_segments))
+    # print(len(vl2)*len(all_segments))
     horizontal_line=[]
     hl2=[]
     h1e=[]
@@ -2369,7 +2423,7 @@ def removeReferenceLines(elements,texts,initial_segments,all_segments,point_map,
                     text_set.add(h2e[i])
                 h2e[i].textpos=True
         reference_lines.append(line.ref)
-    print(len(reference_lines)*len(initial_segments))
+    # print(len(reference_lines)*len(initial_segments))
     new_segments=[]
     for s in initial_segments:
         
@@ -2507,8 +2561,8 @@ def removeReferenceLines(elements,texts,initial_segments,all_segments,point_map,
         vl2.append(DSegment(DPoint(x_1,y),DPoint(x,y+500)))
         vl2.append(DSegment(DPoint(x_2,y),DPoint(x,y+500)))
     #print(len(vertical_lines))
-    print(len(vertical_lines)*len(all_segments))
-    print(len(vl2)*len(all_segments))
+    # print(len(vertical_lines)*len(all_segments))
+    # print(len(vl2)*len(all_segments))
     horizontal_line=[]
     hl2=[]
     h1e=[]
@@ -2524,8 +2578,8 @@ def removeReferenceLines(elements,texts,initial_segments,all_segments,point_map,
     for i in range(len(segment_chunks)):
         chuncks.append([segment_chunks[i],element_chunks[i]])
     s_l=[len(c) for c in segment_chunks]
-    print(len(segment_chunks))
-    print(s_l)
+    # print(len(segment_chunks))
+    # print(s_l)
     # Use ProcessPoolExecutor for parallel computation
     with ProcessPoolExecutor(max_workers=L) as executor:
         partial_intersections = partial(process_intersections, segments=all_block,point_map=point_map,segmentation_config=segmentation_config)
@@ -2543,8 +2597,8 @@ def removeReferenceLines(elements,texts,initial_segments,all_segments,point_map,
     for i in range(len(segment_chunks)):
         chuncks.append([segment_chunks[i],element_chunks[i]])
     s_l=[len(c) for c in segment_chunks]
-    print(len(segment_chunks))
-    print(s_l)
+    # print(len(segment_chunks))
+    # print(s_l)
     # Use ProcessPoolExecutor for parallel computation
     with ProcessPoolExecutor(max_workers=L) as executor:
         partial_intersections = partial(process_intersections2, segments=all_block,point_map=point_map,segmentation_config=segmentation_config)
@@ -2911,7 +2965,7 @@ def removeReferenceLines(elements,texts,initial_segments,all_segments,point_map,
                         h2e[i].textpos=True
                 reference_lines.extend(refs1+refs2)
                 reference_lines.append(line.ref)
-    print(len(reference_lines)*len(initial_segments))
+    # print(len(reference_lines)*len(initial_segments))
     new_segments=[]
     removed_segments=[]
     removed_handles=[]

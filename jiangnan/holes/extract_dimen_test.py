@@ -132,7 +132,7 @@ def extract_dimen_test(dxf_path):
     print(f"  参考线: {total_reference_lines}")
     print(f"  Stiffeners: {total_stiffeners}")
     
-    
+    return results
     
     if debug:
         # 输入文件路径

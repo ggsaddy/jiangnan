@@ -969,8 +969,8 @@ def convertBlocks(doc, block_list):
 
 
             elif e.dxftype() == 'SOLID':
-                # j = convertSolid(e)
-                continue               #存在问题
+                j = convertSolid(e)
+                # continue               #存在问题
             else:
                 # raise NotImplementedError(f'遇到了未见过的类型 {e.dxftype()}')
                 # print(f'Block中遇到了未见过的类型 {e.dxftype()} ')

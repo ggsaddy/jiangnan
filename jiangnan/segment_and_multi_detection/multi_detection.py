@@ -1,14 +1,13 @@
 import argparse
 import os
-
-import ezdxf.colors
 from segment_and_multi_detection.load import dxf2json
-from segment_and_multi_detection.split.main import segment_v4, multi_detect_local
+from segment_and_multi_detection.split.main import segment_v4, multi_detect
 import ezdxf
 import logging
 import json
 import multiprocessing
 from glob import glob
+import sys
 
 def draw_rectangle_in_dxf(file_path, folder, file_name, bbox_lists):
     doc = ezdxf.readfile(file_path)
@@ -208,7 +207,6 @@ def draw_rectangle_in_dxf(file_path, folder, file_name, bbox_lists):
                 "color": 256,
                 "true_color": ezdxf.colors.rgb2int((255,215, 0))  
             })
-        #NEWADD
         elif success == 12: #相似剖面
             x1 = bbox["x1"] 
             y1 = bbox["y1"]
@@ -225,55 +223,67 @@ def draw_rectangle_in_dxf(file_path, folder, file_name, bbox_lists):
                 # 橙色
                 "true_color": ezdxf.colors.rgb2int(( 255, 165, 0))
             })
-            #NEWADD
     doc.saveas(os.path.join(folder, "{}_SECTION_DRAWING.dxf".format(file_name)))
+    return correct, wrong, file_name
+
 
 def multi_detection_main(input_file, input_folder, output_folder):
-    logging.info("multi_detection_main() 被调用了！")
-
+    correct_ratio={}
+    input_file = os.path.abspath(os.path.normpath(input_file))
+    element_list = input_file.split(os.sep)
+    input_folder = element_list[0] + "/" + os.path.join(*element_list[1:-1])
     file_name = os.path.basename(input_file)[:-4]
     print("Processing file: {}".format(file_name))
-    input_dxf_file = os.path.join(input_folder, file_name + ".dxf")
+    json_file = os.path.join(output_folder, file_name + ".json")
+    img_file = os.path.join(output_folder, file_name + ".jpg")
+    split_file = os.path.join(output_folder, file_name + "_split.dxf")
+    
     dxf2json(input_folder, file_name, output_folder)
-    input_json_file = os.path.join(output_folder, file_name + ".json")
-    
-    json_result, bbox_result, _, _ = multi_detect_local(input_json_file)
-    
-    draw_rectangle_in_dxf(input_dxf_file, output_folder, file_name, bbox_result)
-    
+    print("Split start.....")
+    json_result, bbox_result, _, false_count = multi_detect(json_file,img_file)
     json_name = os.path.join(output_folder, file_name) + "_multi.json"
-
     with open(json_name, 'w', encoding='utf-8') as f:
         for res in json_result:
             f.write(json.dumps(res, ensure_ascii=False, indent=4))
         print("writing success")
+    correct, wrong, file_name = draw_rectangle_in_dxf(input_file, output_folder, file_name, bbox_result)
+    correct_ratio[file_name+"正确数"]=correct
+    correct_ratio[file_name+"错误数"]=wrong-false_count
+    correct_ratio[file_name+"正确率"]=1 if(correct+wrong-false_count)==0 else (correct/(correct+wrong-false_count))
     
-def main():
-    #input_json_file = "/disk1/user4/work/造船厂/结构AI/qzr/output/多级剖图20250424.json"
-    input_json_file = "/disk1/user4/work/造船厂/结构AI/qzr/output/test_0725v6.json"
-    output_folder = "/disk1/user4/work/造船厂/结构AI/qzr/output"
-    DEBUG_dxf2json  = True
-    input_folder = os.path.dirname(input_json_file)
-    file_name = os.path.basename(input_json_file)[:-5]
-    input_dxf_file = os.path.join(input_folder, file_name + ".dxf")
-    if DEBUG_dxf2json:
-        dxf2json(input_folder, file_name, output_folder)
-    input_json_file = os.path.join(output_folder, file_name + ".json")
-    
-    json_result, bbox_result, _, _ = multi_detect_local(input_json_file)
-    
-    draw_rectangle_in_dxf(input_dxf_file, output_folder, file_name, bbox_result)
-    
-    json_name = os.path.join(output_folder, file_name) + "_multi.json"
-
-    with open(json_name, 'w', encoding='utf-8') as f:
+    #NEWADD0807
+    # json_file=json.dumps(correct_ratio, ensure_ascii=False, indent=4)
+    # correct_ratio_name = os.path.join(output_folder, file_name) + "_剖面符号规则统计.json"
+    # with open(correct_ratio_name, 'w', encoding='utf-8') as f:
+    #     f.write(json_file)
+    #NEWADD0807
+    json_merged_name = os.path.join(output_folder, file_name) + "_multi_merged.json"
+    with open(json_merged_name, 'w', encoding='utf-8') as f:
         for res in json_result:
+            for i in range(len(res) - 1, -1, -1):
+                item = res[i]
+                if isinstance(item, dict):
+                    if "相似场景" in item.keys() or "子图调用次数" in item.keys():
+                        res.pop(i)  # 使用pop(index)删除指定位置的元素
             f.write(json.dumps(res, ensure_ascii=False, indent=4))
-        print("writing success")
-        
+    multi_detection_result_list= []
+    json_name = os.path.join(output_folder, file_name) + "_multi.json"
+    with open(json_name, 'r', encoding='utf-8') as f:
+        multi_detection_result_list = json.load(f)
+    return multi_detection_result_list
+
+def main(input_folder, output_folder):
+    input_files = glob(os.path.join(input_folder, "*.dxf"))
+    output_folder = os.path.abspath(os.path.normpath(output_folder))
+    os.makedirs(output_folder, exist_ok=True)
+    for input_file in input_files:
+        multi_detection_result_list=multi_detection_main(input_file, input_folder, output_folder)
+        print(f"Processed {input_file}, result: {multi_detection_result_list}")
+    print("All files processed successfully.")
 if __name__ == "__main__":
-    #main()
-    input_file = "/disk1/user4/work/造船厂/结构AI/qzr/output/test_0725v6.dxf"
-    input_folder = "/disk1/user4/work/造船厂/结构AI/qzr/output"
-    output_folder = "/disk1/user4/work/造船厂/结构AI/qzr/output"
-    multi_detection_main(input_file, input_folder, output_folder)
+    multiprocessing.freeze_support()
+    logging.basicConfig(filename="error.txt", level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s")
+    input_folder = "C:/Users/31285/Desktop/曲子睿的文件夹/复旦/CAD分割/DXFStruct/output_check"
+    output_folder = "C:/Users/31285/Desktop/曲子睿的文件夹/复旦/CAD分割/DXFStruct/output_check/segment_0804"
+    main(input_folder, output_folder)
+    

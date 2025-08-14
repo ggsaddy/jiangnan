@@ -1,12 +1,12 @@
-from  element import *
-from plot_geo import plot_geometry,plot_polys, plot_info_poly,p_minus,p_add,p_mul
+from bracket.BraketDetection.element import *
+from bracket.BraketDetection.plot_geo import plot_geometry,plot_polys, plot_info_poly,p_minus,p_add,p_mul
 import os
-from utils import segment_intersection_line,segment_intersection,computeBoundingBox,is_parallel,conpute_angle_of_two_segments,point_segment_position,shrinkFixedLength,check_points_against_segments,check_points_against_free_segments,check_parallel_anno,check_vertical_anno,check_non_parallel_anno
-from classifier import poly_classifier
+from bracket.BraketDetection.utils import segment_intersection_line,segment_intersection,computeBoundingBox,is_parallel,conpute_angle_of_two_segments,point_segment_position,shrinkFixedLength,check_points_against_segments,check_points_against_free_segments,check_parallel_anno,check_vertical_anno,check_non_parallel_anno
+from bracket.BraketDetection.classifier import poly_classifier
 from scipy.spatial import ConvexHull
 import matplotlib.pyplot as plt
 from shapely.geometry import Point, Polygon
-from bracket_parameter_extraction import parse_elbow_plate
+from bracket.BraketDetection.bracket_parameter_extraction import parse_elbow_plate
 import json
 def is_point_in_polygon(point, polygon_edges):
     

@@ -473,10 +473,10 @@ class EntityExtractor:
                     start_angle = self.rectify_angle(entity['startAngle'] + rotation) % 360
                     end_angle = self.rectify_angle(entity['endAngle'] + rotation) % 360
 
-                    if abs(center[0] - mid_point[0]) <= 5000:
-                        pass
-                    else:
-                        raise NotImplementedError(f"{abs(center[0] - mid_point[0])}")
+                    # if abs(center[0] - mid_point[0]) <= 10000:
+                    #     pass
+                    # else:
+                    #     raise NotImplementedError(f"{abs(center[0] - mid_point[0])}")
                     
                     # 计算转换后的点
                     # points = self.get_arc_points(center, radius, start_angle, end_angle)

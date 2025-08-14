@@ -1,5 +1,5 @@
 import json
-from classifier import strict_classifier, unrestricted_classifier, conerhole_free_classifier
+from bracket.BraketDetection.classifier import strict_classifier, unrestricted_classifier, conerhole_free_classifier
 
 def load_classification_table(file_path):
     """

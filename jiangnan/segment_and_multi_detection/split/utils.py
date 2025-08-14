@@ -328,9 +328,7 @@ def load_data_and_get_main_bbox(filepath, threshold=0.1):
         main_bbox_dict, duplicate_tukuang = remove_duplicate_tukuang(main_bbox_dict)
         
         for data in json_data_main:
-            # NEWADD
-            if data["layerName"] != "SPLIT" and "修改" not in data["layerName"]: #排除程序画的红线
-            # </NEWADD>
+            if  "修改" not in data["layerName"]: #排除程序画的红线
                 #获取人工处理的元素
                 already_add = False
                 for human_index, human_bbox in enumerate(human_add_list):
@@ -374,7 +372,89 @@ def load_data_and_get_main_bbox(filepath, threshold=0.1):
 
     return result, json_data_remain
 
+#OLD
+def load_data_and_get_main_bbox_bound(filepath, threshold=0.1,bound_json=None):
+    if bound_json is not None:
+        with open(bound_json, 'r', encoding='utf8') as fp:
+            bound_data = json.load(fp)
+    if "x1" not in bound_data or "y1" not in bound_data or "x2" not in bound_data or "y2" not in bound_data:
+        raise ValueError("bound_json格式错误, 请检查是否包含x1, y1, x2, y2四个键.")
+    left_bound = min(bound_data["x1"], bound_data["x2"])
+    right_bound = max(bound_data["x1"], bound_data["x2"])
+    top_bound = min(bound_data["y1"], bound_data["y2"])
+    bottom_bound = max(bound_data["y1"], bound_data["y2"])
 
+
+    main_bbox_dict = {}
+    result = {}
+    count = 0
+    area_threshold = 1102342000
+    human_add_list = []
+    with open(filepath, 'r', encoding='utf8') as fp:
+        json_data = json.load(fp)
+        if len(json_data) == 2:
+            json_data_main = json_data[0]
+            json_data_remain = json_data[1]
+        for data in json_data_main:
+            if data["layerName"] == "SPLIT" and data["color"] !=  1 and is_fully_contained_strictly(bound_data,data["bound"]): #人工处理，和原本正确的红色框进行区分（改变颜色）
+                human_add_list.append(data["bound"])
+            elif is_fully_contained_strictly(bound_data, data["bound"]):
+                area = calculate_area(data["bound"])
+                if area >= area_threshold * 0.99 and area < area_threshold * 20:
+                    main_bbox_dict[count] = data["bound"]
+                    count += 1
+                   
+        if len(main_bbox_dict) == 0:
+            raise ValueError("未检测到图框, 请检查图框类型和尺寸.")
+        
+        #图框去重
+        main_bbox_dict, duplicate_tukuang = remove_duplicate_tukuang(main_bbox_dict)
+        
+        for data in json_data_main:
+            if data["layerName"] != "SPLIT" and "修改" not in data["layerName"] and is_fully_contained_strictly(bound_data,data["bound"]): #排除程序画的红线
+                #获取人工处理的元素
+                already_add = False
+                for human_index, human_bbox in enumerate(human_add_list):
+                    if is_fully_contained_strictly(human_bbox, data["bound"]):
+                        tmp = component(data["type"], data["bound"], data)
+                        tmp.manual_index = human_index
+                        for i, main_bbox in main_bbox_dict.items():
+                            if is_fully_contained_strictly(main_bbox, data["bound"]):
+                                if i in result and human_index in result[i]["human"]:
+                                    result[i]["human"][human_index].push(tmp)
+                                elif i in result and human_index not in result[i]["human"]:
+                                    result[i]["human"][human_index] = all_components()
+                                    result[i]["human"][human_index].push(tmp)
+                                else:
+                                    result[i] = {"main":all_components(), "human":{}}
+                                    result[i]["human"][human_index] = all_components()
+                                    result[i]["human"][human_index].push(tmp)
+                        already_add = True
+                if already_add == False:
+                    #获取剩余在图框中且不在禁区内的元素
+                    for i, bbox in main_bbox_dict.items():
+                        new_bbox, f1, f2, f3, f4 = get_new_tukuang_and_forbidden_area(bbox)
+                        if is_fully_contained_strictly(new_bbox, data["bound"]) and check_duplicate(data["bound"], duplicate_tukuang) and \
+                            not is_fully_contained_with_outlier(f1, data["bound"]) and not is_fully_contained_with_outlier(f2, data["bound"]):
+                                if f3 is not None and f4 is not None:
+                                    if not is_fully_contained_with_outlier(f3, data["bound"]) and not is_fully_contained_with_outlier(f4, data["bound"]):
+                                        tmp = component(data["type"], data["bound"], data)
+                                        if i in result:
+                                            result[i]["main"].push(tmp)
+                                        else:
+                                            result[i] = {"main":all_components(), "human":{}}
+                                            result[i]["main"].push(tmp)
+                                else:
+                                    tmp = component(data["type"], data["bound"], data)
+                                    if i in result:
+                                        result[i]["main"].push(tmp)
+                                    else:
+                                        result[i] = {"main":all_components(), "human":{}}
+                                        result[i]["main"].push(tmp)
+                                            
+
+    return result, json_data_remain
+#OLD
 # 本地load方法
 def load_data_and_get_main_bbox_local(filepath, threshold=0.1):
     main_bbox_dict = {}
@@ -945,6 +1025,30 @@ def search_nearest_comp_from_point(point: list, ori_components: all_components, 
 def search_zitu_by_arrow(arrow: component, ori_components: all_components, human_components: dict):
     end_point = [arrow.data["vertices"][0][0], arrow.data["vertices"][0][1]]
     comp, comp_index = search_nearest_comp_from_point(end_point, ori_components, arrow)
+    ##OLD
+    candidate_bbox=[]
+    for comp in ori_components:
+        if comp.data["layerName"]=="SPLIT" or comp.data["layerName"]=="Split" or comp.data["layerName"]=="SECTION DRAWING":
+            bbox=comp.bbox
+            if end_point[0]>bbox['x1'] and end_point[0]<bbox['x2'] and end_point[1]>bbox['y1'] and end_point[1]<bbox['y2']:
+                candidate_bbox.append(bbox)
+    if len(candidate_bbox)>0:
+        candidate_bbox.sort(key=lambda x:calculate_area(x))
+        smallest_bbox=candidate_bbox[0]
+        result_comp=[]
+        for i in range(len(ori_components)):
+            if ori_components[i].data["handle"] == arrow.data["handle"]:
+                continue
+            bbox=ori_components[i].bbox
+            if is_fully_contained_strictly(smallest_bbox,bbox) and calculate_area(bbox)<4e6:
+                result_comp.append(ori_components[i])
+        if len(result_comp)>0:
+            zitu = all_components(value=result_comp)
+            return zitu
+        else:
+            pass
+                
+    ##OLD
     if comp is not None:
         if comp.manual_index == 0:
             zitu = bfs_by_arrow(comp_index, ori_components, arrow)
@@ -1006,7 +1110,32 @@ def distance_from_point_to_bbox(point, bbox):
 
 def search_zitu_by_arrow_special(arrow: component, ori_components: all_components, human_components: dict):
     end_point = [arrow.data["vertices"][0][0], arrow.data["vertices"][0][1]]
+        ##OLD
+    candidate_bbox=[]
+    for comp in ori_components:
+        if comp.data["layerName"]=="SPLIT" or comp.data["layerName"]=="Split" or comp.data["layerName"]=="SECTION DRAWING":
+            bbox=comp.bbox
+            if end_point[0]>bbox['x1'] and end_point[0]<bbox['x2'] and end_point[1]>bbox['y1'] and end_point[1]<bbox['y2']:
+                candidate_bbox.append(bbox)
+    if len(candidate_bbox)>0:
+        candidate_bbox.sort(key=lambda x:calculate_area(x))
+        smallest_bbox=candidate_bbox[0]
+        result_comp=[]
+        for i in range(len(ori_components)):
+            if ori_components[i].data["handle"] == arrow.data["handle"]:
+                continue
+            bbox=ori_components[i].bbox
+            if is_fully_contained_strictly(smallest_bbox,bbox) and calculate_area(bbox)<4e6:
+                result_comp.append(ori_components[i])
+        if len(result_comp)>0:
+            zitu = all_components(value=result_comp)
+            return zitu
+        else:
+            pass
+                
+    ##OLD
     comp, comp_index = search_nearest_comp_from_point(end_point, ori_components, arrow)
+
     if comp is not None:
         if comp.manual_index == 0:
             zitu = bfs_by_arrow_special(comp_index, ori_components, arrow)

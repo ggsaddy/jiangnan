@@ -11,8 +11,8 @@ class SegmentationConfig:
       
 
 
-        self.line_expand_length=7.5
-        self.arc_expand_length=5
+        self.line_expand_length=5
+        self.arc_expand_length=2.5
         self.line_image_path="./output/line.png"
         self.draw_intersections=False
 
@@ -114,14 +114,14 @@ class SegmentationConfig:
         self.is_parallel_tolerance=0.15
         #readJson
         self.line_type=["BYLAYER","CONTINUOUS","BYBLOCK"]
-        self.color=[6]
+        self.color=[]
         self.constraint_color=[1,3,80]
         self.element_type=["line","arc","lwpolyline","polyline","spline"]
 
         self.stiffener_name = ["Stiffener_Invisible","Stiffener_Visible"]
         # self.remove_layername=["Stiffener_Invisible","Stiffener_Visible","Plate_Invisible","Plate_Visible"]
         self.remove_linetype=[]
-        self.remove_layername=["Seam","100-人孔盖","人孔盖", "开孔识别结果", "可识别贯穿孔","肘板标注","Braket"]
+        self.remove_layername=["100-人孔盖","人孔盖", "开孔识别结果", "可识别贯穿孔","肘板标注","Braket"]
         self.remove_layername.extend(self.stiffener_name)
         #check is bracket
         #偏离凸多边形的程度

@@ -86,6 +86,7 @@ def predict_image_tta(
 def predict_image(
     model,
     image_path: str,
+    work_dir: str,
     conf_threshold: float = 0.25,
     imgsz: int = 1024,
     verbose: bool = False,
@@ -111,6 +112,7 @@ def predict_image(
         verbose=verbose,
         save=save,
         augment=True,
+        project=work_dir, 
     )
 
 

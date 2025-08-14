@@ -755,6 +755,8 @@ def return_result(detection_results_list: list):
             }
             bbox_list.append((arrou_bbox, 4))
             result_dict["子图bbox"] = zitu_bbox
+        else:
+            result_dict["子图bbox"] = {}
         
         json_results_list.append(result_dict)
     
@@ -1198,6 +1200,91 @@ def union_bbox_list(bbox1, jsonfile, tolerance=200):
     
     return filtered_bbox1
 #########################0711
+
+##0801
+def merged_bbox_to_json(bbox_list, jsonfile, output_jsonfile):
+    import json
+    
+    # 读取原始 JSON 文件
+    try:
+        with open(jsonfile, 'r', encoding='utf-8') as f:
+            json_bboxes = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        print(f"Error reading JSON file: {e}")
+        json_bboxes = []
+    
+    # 获取有效的 JSON bbox 列表
+    valid_json_bboxes = []
+    for bbox in json_bboxes:
+        if isinstance(bbox, dict) and all(key in bbox for key in ['x1', 'y1', 'x2', 'y2']):
+            valid_json_bboxes.append(bbox)
+    
+    # 从bbox_list中提取bbox字典（不进行过滤，直接添加）
+    new_bboxes = []
+    for item in bbox_list:
+        if isinstance(item, tuple) and len(item) == 2:
+            bbox_dict, num = item
+            if isinstance(bbox_dict, dict) and all(key in bbox_dict for key in ['x1', 'y1', 'x2', 'y2']):
+                if num in [3,7,8,9,10,11]:
+                    new_bboxes.append(bbox_dict)
+    
+    # 直接合并原有的JSON bbox和新的bbox
+    merged_bboxes = valid_json_bboxes + new_bboxes
+    
+    # 输出到新的JSON文件
+    try:
+        with open(output_jsonfile, 'w', encoding='utf-8') as f:
+            json.dump(merged_bboxes, f, ensure_ascii=False, indent=2)
+        print(f"成功将 {len(merged_bboxes)} 个bbox（原有{len(valid_json_bboxes)}个，新增{len(new_bboxes)}个）输出到 {output_jsonfile}")
+        return True
+    except Exception as e:
+        print(f"Error writing to JSON file: {e}")
+        return False
+##0801
+def merged_polygon_to_json(bbox_list, jsonfile, output_jsonfile):
+    import json
+    
+    # 读取原始 JSON 文件
+    try:
+        with open(jsonfile, 'r', encoding='utf-8') as f:
+            json_bboxes = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        print(f"Error reading JSON file: {e}")
+        json_bboxes = []
+    
+    # 从bbox_list中提取bbox字典（不进行过滤，直接添加）
+    new_bboxes = []
+    for item in bbox_list:
+        if isinstance(item, tuple) and len(item) == 2:
+            bbox_dict, num = item
+            if isinstance(bbox_dict, dict) and all(key in bbox_dict for key in ['x1', 'y1', 'x2', 'y2']):
+                if num in [3,7,8,9,10,11]:
+                    x1,y1,x2,y2 = bbox_dict["x1"], bbox_dict["y1"], bbox_dict["x2"], bbox_dict["y2"]
+                    # 计算多边形的四个顶点
+                    vertices = [
+                        [x1, y1],  # 左上角
+                        [x2, y1],  # 右上角
+                        [x2, y2],  # 右下角
+                        [x1, y2],  # 左下角
+                        [x1, y1]   # 回到左上角以闭合多边形
+                    ]
+                    dict_vertices = {
+                        "coordinates": vertices,
+                    }
+                    new_bboxes.append(dict_vertices)
+    
+    # 直接合并原有的JSON bbox和新的bbox
+    merged_bboxes = json_bboxes + new_bboxes
+    
+    # 输出到新的JSON文件
+    try:
+        with open(output_jsonfile, 'w', encoding='utf-8') as f:
+            json.dump(merged_bboxes, f, ensure_ascii=False, indent=2)
+        print(f"成功将 {len(merged_bboxes)} 个bbox（原有{len(json_bboxes)}个，新增{len(new_bboxes)}个）输出到 {output_jsonfile}")
+        return True
+    except Exception as e:
+        print(f"Error writing to JSON file: {e}")
+        return False
 #在每一个图框中进行解析
 def detect_on_every_tukuang(ori_components: all_components, done_components_list: list, all_insert_info: dict, human_components: dict):
     result = []
@@ -1541,8 +1628,18 @@ def detect_on_every_tukuang(ori_components: all_components, done_components_list
                     # 获取子图
                     zitu = search_zitu_by_arrow_special(comp, ori_components, human_components)
                     zhutustructure = find_nearest_none_text(comp, ori_components,threshold=100)
+                    
                     if zitu is not None:
                         print("找到子图：", zitu.title)
+                        bbox_zitu=zitu.get_final_bbox()[0] if zitu is not None else None
+                        if bbox_zitu is not None and calculate_area(bbox_zitu) >60000000:
+                            print("子图面积过大，跳过")
+                            continue
+                        bbox_zhutu=zhutustructure.bbox if zhutustructure is not None else None
+                        if bbox_zhutu is not None and calculate_area(bbox_zhutu) >60000000:
+                            print("主图点划线框面积过大，跳过")
+                            continue
+
                         result.append({"相似场景": "局部放大",
                                     "主图标题": zhutu_title,
                                     "主图点划线圆形框或具体结构对象句柄": zhutustructure.data["handle"] if zhutustructure is not None else None,
@@ -2352,7 +2449,6 @@ def find_elements_at_fr_positions(zhutu, x_positions, reference_poumian, thresho
                         else:
                             print(f"元素不垂直，跳过：{comp.data['handle']}, 位于FR位置: {x_pos:.2f}, x坐标: {comp_center_x:.2f}")
                         break
-    ##<!--NEWADD-->
     print("参考剖面元素数量:", len(reference_features))
     for x_pos in x_positions:
         if x_pos in result_by_position:
@@ -2396,7 +2492,6 @@ def find_elements_at_fr_positions(zhutu, x_positions, reference_poumian, thresho
             
             result_by_position[x_pos] = filtered_elements
             print(f"FR位置 {x_pos:.2f} 过滤后剩余 {len(filtered_elements)} 个元素")
-    #</NEWADD>
     # # 打印每个FR位置找到的元素数量
     # for x_pos, elements in result_by_position.items():
     #     #print(f"FR位置 {x_pos:.2f} 找到 {len(elements)} 个元素")
@@ -3094,7 +3189,6 @@ def after_deal_with_title(result_components_list: list, json_result: list, bbox_
     # 0709 0719修订，添加新的计数
     subgraph_count = dict()
     subgraph_info = {}  # 用于存储每个子图的详细信息
-    ##<NEWADD>
     for comp_list in result_components_list:
         if hasattr(comp_list, 'title'):
             try:
@@ -3117,7 +3211,6 @@ def after_deal_with_title(result_components_list: list, json_result: list, bbox_
             except Exception as e:
                 print(f"初始化子图信息时出错: {e}")
                 continue
-        ##<NEWADD/>
     for result in json_result:
         if "相似场景" in result.keys() and result["相似场景"] == "局部重绘":
             continue
@@ -3130,14 +3223,14 @@ def after_deal_with_title(result_components_list: list, json_result: list, bbox_
             continue
         if "相似场景" in result.keys() and result["相似场景"] == "WL/DL格式子图":
             continue
-        #NEWADD
         if "相似场景" in result.keys() and result["相似场景"] == "WL/DL格式子图-场景四":
             continue
-        #NEWADD/
         if "子图bbox" in result.keys():
             subgraph_bbox = result["子图bbox"]
             bbox_key = str(subgraph_bbox)
-            
+            if bbox_key =="{}":
+                print("子图bbox为空，跳过")
+                continue
             # 统计调用次数
             if bbox_key not in subgraph_count:
                 subgraph_count[bbox_key] = 1

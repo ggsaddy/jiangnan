@@ -7,6 +7,7 @@ import json, os
 from waitress import serve
 import argparse
 import logging.handlers
+import math
 import preprocess.load as load
 import preprocess.convert_dwg2dxf as convert_dwg2dxf
 import segment_and_multi_detection.segment_all as segment_all
@@ -192,16 +193,65 @@ def dwg_bracket():
     config_path = None
     bbox,all_json_data = bracket_detection.bracket_detection(output_path, output_folder_1, config_path)
 
-    response_data = {
+    # 设置分页参数（默认每页1个肘板）
+    per_page = 1
+    total_pages = math.ceil(len(all_json_data) / per_page)
+    
+    def generate():
+        """生成器函数，用于分页流式输出"""
+        # 分页流式输出
+        for page in range(total_pages):
+            start_idx = page * per_page
+            end_idx = start_idx + per_page
+            # current_page_data = processed_data[start_idx:end_idx]
+            current_page_data = []
+            for i in range(start_idx, end_idx):
+                if i < len(all_json_data) and i < len(bbox):
+                    current_page_data.append({
+                        "bbox": bbox[i],
+                        "data": all_json_data[i]
+                    })
+            
+            yield json.dumps({
+                "code": 200,
+                "message": "success",
+                "data": {
+                    "items": current_page_data,
+                    "pagination": {
+                        "current_page": page + 1,
+                        "page_size": per_page,
+                        "total_items": len(all_json_data),
+                        "total_pages": total_pages
+                    }
+                }
+            },
+            default=str, 
+            ensure_ascii=False, 
+            indent=4) + "\n"
+
+    return Response(
+        generate(),
+        mimetype='application/json-stream',
+        headers={
+            "X-Accel-Buffering": "no",  # 禁用Nginx缓冲
+            "Cache-Control": "no-cache"
+        }
+    )
+
+    '''response_data = {
         "bbox": bbox,
         "all_json_data": all_json_data
     }
 
     json_str = json.dumps(response_data,default=str, ensure_ascii=False, indent=4)
+    return jsonify({
+            'len_bbox': len(bbox),
+            'len_all_json_data': len(all_json_data),
+    }), 200 
     return Response(json_str,
     status=200,
-    mimetype='application/json')
-    # retur,n "<p>success!</p>"
+    mimetype='application/json')'''
+    # return "<p>success!</p>"
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=1180)
